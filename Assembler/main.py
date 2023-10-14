@@ -201,26 +201,26 @@ def convert_binary():
 					imm = line_tokens[no_of_operands]
 					register_2 = line_tokens[no_of_operands-1]
 					register_1 = line_tokens[no_of_operands-2]
-					sub_bin = s_type_to_binary(opcode, function_3_value, register_1, register_2, int(imm))
+					sub_bin = s_type_to_binary(opcode, function_3_value, registers[register_1], registers[register_2], int(imm))
 					bin_program.append(sub_bin)
 				elif type == "SB":
 					sub_bin = ""
 					imm = line_tokens[no_of_operands]
 					register_2 = line_tokens[no_of_operands-1]
 					register_1 = line_tokens[no_of_operands-2]
-					sub_bin = sb_type_to_binary(opcode, function_3_value, register_1, register_2, int(imm))
+					sub_bin = sb_type_to_binary(opcode, function_3_value, registers[register_1], registers[register_2], int(imm))
 					bin_program.append(sub_bin)
 				elif type == "U":
 					sub_bin=""
 					imm = line_tokens[no_of_operands]
 					dest_register = line_tokens[no_of_operands-1]
-					sub_bin = u_type_assembly_to_binary(int(imm), dest_register, opcode)
+					sub_bin = u_type_assembly_to_binary(int(imm), registers[dest_register], opcode)
 					bin_program.append(sub_bin)
 				elif type == "UJ":
 					sub_bin=""
 					imm = line_tokens[no_of_operands]
 					dest_register = line_tokens[no_of_operands-1]
-					sub_bin = uj_type_assembly_to_binary(int(imm),dest_register,opcode)
+					sub_bin = uj_type_assembly_to_binary(int(imm),registers[dest_register],opcode)
 					bin_program.append(sub_bin)
 
 def main():
@@ -232,6 +232,7 @@ def main():
 	convert_binary()
 	output_file_path = "output.bin"
 	# Open the binary file for writing in binary mode
+	print(bin_program)
 	with open(output_file_path, "wb") as binary_file:
 		for binary_str in bin_program:
 			# Convert the binary string to bytes and write it to the binary file

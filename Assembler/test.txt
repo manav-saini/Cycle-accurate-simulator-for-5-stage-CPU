@@ -1,0 +1,3 @@
+LUI ra 10
+AUIPC ra 20
+JAL ra 30
