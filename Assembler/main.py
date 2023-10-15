@@ -101,28 +101,25 @@ def sb_type_to_binary(opcode, funct3, rs1, rs2, imm):
         raise ValueError("Immediate value must be even for SB-type instructions")
 
     # Create the binary representation
-    imm_11 = (imm >> 11) & 1
-    imm_4_1 = (imm >> 1) & 0b1111
-    imm_10_5 = (imm >> 5) & 0b111111
-    imm_12 = (imm >> 12) & 1
+    imm_binary = decimal_to_12bit_binary(imm)+"0"
     opcode_bits = opcode
     funct3_bits = funct3
     rs1_bits = rs1
     rs2_bits = rs2
     # Concatenate all the binary fields
-    binary = f"{imm_12}{imm_10_5}{rs2_bits}{rs1_bits}{funct3_bits}{imm_4_1}{imm_11}{opcode_bits}"
+    binary = f"{imm_binary[0]}{imm_binary[2:8]}{rs2_bits}{rs1_bits}{funct3_bits}{imm_binary[8:12]}{imm_binary[1]}{opcode_bits}"
     return binary
 
 def u_type_assembly_to_binary(imm, rd, opcode):
     if imm < 0 or imm > 1048575:  # Validate that imm is within the range 0 to 2^20-1
         raise ValueError("Immediate value must be in the range 0 to 1048575 for U-type instruction.")
     # Convert the values to binary strings
-    imm_binary = format(imm, '020b')  # 20 bits for imm[31:12]
+    imm_binary = format(imm, '032b')  # 20 bits for imm[31:12]
     rd_binary = rd   # 5 bits for rd
     opcode_binary = opcode  # 7 bits for opcode
 
     # Concatenate the binary strings to form the U-type instruction
-    u_type_binary = imm_binary + rd_binary + opcode_binary
+    u_type_binary = imm_binary[0:20] + rd_binary + opcode_binary
 
     return u_type_binary
 
@@ -147,13 +144,15 @@ def decimal_to_21bit_signed_binary(decimal):
 
 def uj_type_assembly_to_binary(imm,rd,opcode):
 	imm_bin = decimal_to_21bit_signed_binary(imm)
-	return f"{imm_bin[20]}{imm_bin[10:1]}{imm_bin[11]}{imm_bin[19:12]}{rd}{opcode}"
+	print(imm_bin)
+	return f"{imm_bin[0]}{imm_bin[10:20]}{imm_bin[9]}{imm_bin[1:9]}{rd}{opcode}"
 
 def convert_binary():
 	global program
 	global opcode_table
 	global type_table
 	for line in program:
+		line = line.replace("\n","")
 		line_tokens = line.split(" ")
 		operation = line_tokens[0]
 		if operation in opcode_table:
@@ -164,7 +163,8 @@ def convert_binary():
 			function_7_values = -1
 			if len(values)==3:
 				function_3_value = values[2]
-			elif len(values)==4:
+			if len(values)==4:
+				function_3_value = values[2]
 				function_7_values = values[3]
 			if type in type_table:
 				type_data = type_table[type]
@@ -194,7 +194,7 @@ def convert_binary():
 					register_1 = line_tokens[no_of_operands-1]
 					dest_register = line_tokens[no_of_operands-2]
 					imm_bin = decimal_to_12bit_binary(int(imm))
-					sub_bin = f"{imm_bin}{registers[register_1]}{function_3_value}{dest_register}{opcode}"
+					sub_bin = f"{imm_bin}{registers[register_1]}{function_3_value}{registers[dest_register]}{opcode}"
 					bin_program.append(sub_bin)
 				elif type == "S":
 					sub_bin=""

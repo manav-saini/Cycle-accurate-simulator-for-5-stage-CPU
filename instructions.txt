@@ -1,37 +1,37 @@
-LUI rd,imm
-AUIPC rd,imm
-JAL rd,imm
-JALR rd,rs1,imm
-BEQ rs1,rs2,imm
-BNE rs1,rs2,imm
-BLT rs1,rs2,imm
-BGE rs1,rs2,imm
-BLTU rs1,rs2,imm
-BGEU rs1,rs2,imm
-LB rd,rs1,imm
-LH rd,rs1,imm
-LW rd,rs1,imm
-LBU rd,rs1,imm
-LHU rd,rs1,imm
-SB rs1,rs2,imm
-SH rs1,rs2,imm
-SW rs1,rs2,imm
-ADDI rd,rs1,imm
-SLTI rd,rs1,imm
-SLTIU rd,rs1,imm
-XORI rd,rs1,imm
-ORI rd,rs1,imm
-ANDI rd,rs1,imm
-SLLI rd,rs1,shamt
-SRLI rd,rs1,shamt
-SRAI rd,rs1,shamt
-ADD rd,rs1,rs2
-SUB rd,rs1,rs2
-SLL rd,rs1,rs2
-SLT rd,rs1,rs2
-SLTU rd,rs1,rs2
-XOR rd,rs1,rs2
-SRL rd,rs1,rs2
-SRA rd,rs1,rs2
-OR rd,rs1,rs2
-AND rd,rs1,rs2
+LUI ra 10
+AUIPC ra 10
+JAL ra 10
+JALR ra a1 10
+BEQ a1 a2 10
+BNE a1 a2 10
+BLT a1 a2 10
+BGE a1 a2 10
+BLTU a1 a2 10
+BGEU a1 a2 10
+LB ra a1 10
+LH ra a1 10
+LW ra a1 10
+LBU ra a1 10
+LHU ra a1 10
+SB a1 a2 10
+SH a1 a2 10
+SW a1 a2 10
+ADDI ra a1 10
+SLTI ra a1 10
+SLTIU ra a1 10
+XORI ra a1 10
+ORI ra a1 10
+ANDI ra a1 10
+SLLI ra a1 shamt
+SRLI ra a1 shamt
+SRAI ra a1 shamt
+ADD ra a1 a2
+SUB ra a1 a2
+SLL ra a1 a2
+SLT ra a1 a2
+SLTU ra a1 a2
+XOR ra a1 a2
+SRL ra a1 a2
+SRA ra a1 a2
+OR ra a1 a2
+AND ra a1 a2

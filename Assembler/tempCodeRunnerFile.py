@@ -1,1 +1,1 @@
-ra
+print
