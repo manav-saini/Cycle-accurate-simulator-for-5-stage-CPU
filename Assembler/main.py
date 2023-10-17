@@ -145,12 +145,12 @@ def u_type_assembly_to_binary(imm, rd, opcode):
     if imm < 0 or imm > 1048575:  # Validate that imm is within the range 0 to 2^20-1
         raise ValueError("Immediate value must be in the range 0 to 1048575 for U-type instruction.")
     # Convert the values to binary strings
-    imm_binary = format(imm, '032b')  # 20 bits for imm[31:12]
+    imm_binary = format(imm, '020b')  # 20 bits for imm[31:12]
     rd_binary = rd   # 5 bits for rd
     opcode_binary = opcode  # 7 bits for opcode
 
     # Concatenate the binary strings to form the U-type instruction
-    u_type_binary = imm_binary[0:20] + rd_binary + opcode_binary
+    u_type_binary = imm_binary + rd_binary + opcode_binary
 
     return u_type_binary
 
