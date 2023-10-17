@@ -147,37 +147,39 @@ def execute_instruction(binary_instruction):
             # print("JALR: ", imm, rs1, rd)
             registers, memory, pc = jalr(rd, rs1, imm, registers, memory, pc)
         elif operation == 'BEQ':
-            imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
+            imm = int(binary_instruction[0]+binary_instruction[24]+binary_instruction[1:6]+binary_instruction[20:24],2)
+            #imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             # print("BEQ: ", imm, rs1, rs2)
             registers, memory, pc = beq(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'BNE':
-            imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
+            imm = int(binary_instruction[0]+binary_instruction[24]+binary_instruction[1:6]+binary_instruction[20:24],2)
+            #imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             # print("BNE: ", imm, rs1, rs2)
             registers, memory, pc = bne(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'BLT':
-            imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
+            imm = int(binary_instruction[0]+binary_instruction[24]+binary_instruction[1:6]+binary_instruction[20:24],2)
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             # print("BLT: ", imm, rs1, rs2)
             registers, memory, pc = blt(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'BGE':
-            imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
+            imm = int(binary_instruction[0]+binary_instruction[24]+binary_instruction[1:6]+binary_instruction[20:24],2)
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             # print("BGE: ", imm, rs1, rs2)
             registers, memory, pc = bge(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'BLTU':
-            imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
+            imm = int(binary_instruction[0]+binary_instruction[24]+binary_instruction[1:6]+binary_instruction[20:24],2)
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             # print("BLTU: ", imm, rs1, rs2)
             registers, memory, pc = bltu(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'BGEU':
-            imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
+            imm = int(binary_instruction[0]+binary_instruction[24]+binary_instruction[1:6]+binary_instruction[20:24],2)
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             # print("BGEU: ", imm, rs1, rs2)
