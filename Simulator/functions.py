@@ -15,7 +15,7 @@ def lui(rd, imm, registers, memory, pc):
     # print("lui")
     registers[rd] = imm << 12
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def auipc(rd, imm, registers, memory, pc):
     """
@@ -25,7 +25,7 @@ def auipc(rd, imm, registers, memory, pc):
     # print("auipc")
     registers[rd] = (imm << 12) + pc
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def jal(rd, imm, registers, memory, pc):
     """
@@ -130,7 +130,7 @@ def lb(rd, rs1, imm, registers, memory, pc):
     address = registers[rs1] + imm
     registers[rd] = memory[address]
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def lh(rd, rs1, imm, registers, memory, pc):
     """
@@ -141,7 +141,7 @@ def lh(rd, rs1, imm, registers, memory, pc):
     address = registers[rs1] + imm
     registers[rd] = (memory[address] & 0xFF) | (memory[address + 1] << 8)
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def lw(rd, rs1, imm, registers, memory, pc):
     """
@@ -152,7 +152,7 @@ def lw(rd, rs1, imm, registers, memory, pc):
     address = registers[rs1] + imm
     registers[rd] = (memory[address] & 0xFF) | ((memory[address + 1] & 0xFF) << 8) | ((memory[address + 2] & 0xFF) << 16) | (memory[address + 3] << 24)
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def lbu(rd, rs1, imm, registers, memory, pc):
     """
@@ -163,7 +163,7 @@ def lbu(rd, rs1, imm, registers, memory, pc):
     address = registers[rs1] + imm
     registers[rd] = memory[address]
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def lhu(rd, rs1, imm, registers, memory, pc):
     """
@@ -174,7 +174,7 @@ def lhu(rd, rs1, imm, registers, memory, pc):
     address = registers[rs1] + imm
     registers[rd] = (memory[address] & 0xFF) | (memory[address + 1] << 8)
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def sb(rs1, rs2, imm, registers, memory, pc):
     """
@@ -185,7 +185,7 @@ def sb(rs1, rs2, imm, registers, memory, pc):
     address = registers[rs1] + imm
     memory[address] = registers[rs2] & 0xFF
     # print(memory[address])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def sh(rs1, rs2, imm, registers, memory, pc):
     """
@@ -197,7 +197,7 @@ def sh(rs1, rs2, imm, registers, memory, pc):
     memory[address] = registers[rs2] & 0xFF
     memory[address + 1] = (registers[rs2] >> 8) & 0xFF
     # print(memory[address])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def sw(rs1, rs2, imm, registers, memory, pc):
     """
@@ -211,7 +211,7 @@ def sw(rs1, rs2, imm, registers, memory, pc):
     memory[address + 2] = (registers[rs2] >> 16) & 0xFF
     memory[address + 3] = (registers[rs2] >> 24)
     # print(memory[address])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def addi(rd, rs1, imm, registers, memory, pc):
     """
@@ -221,7 +221,7 @@ def addi(rd, rs1, imm, registers, memory, pc):
     # print("addi")
     registers[rd] = registers[rs1] + imm
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def slti(rd, rs1, imm, registers, memory, pc):
     """
@@ -231,7 +231,7 @@ def slti(rd, rs1, imm, registers, memory, pc):
     # print("slti")
     registers[rd] = 1 if registers[rs1] < imm else 0
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def sltiu(rd, rs1, imm, registers, memory, pc):
     """
@@ -241,7 +241,7 @@ def sltiu(rd, rs1, imm, registers, memory, pc):
     # print("sltiu")
     registers[rd] = 1 if registers[rs1] < imm else 0
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def xori(rd, rs1, imm, registers, memory, pc):
     """
@@ -251,7 +251,7 @@ def xori(rd, rs1, imm, registers, memory, pc):
     # print("xori")
     registers[rd] = registers[rs1] ^ imm
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def ori(rd, rs1, imm, registers, memory, pc):
     """
@@ -261,7 +261,7 @@ def ori(rd, rs1, imm, registers, memory, pc):
     # print("ori")
     registers[rd] = registers[rs1] | imm
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def andi(rd, rs1, imm, registers, memory, pc):
     """
@@ -271,7 +271,7 @@ def andi(rd, rs1, imm, registers, memory, pc):
     # print("andi")
     registers[rd] = registers[rs1] & imm
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def slli(rd, rs1, shamt, registers, memory, pc):
     """
@@ -281,7 +281,7 @@ def slli(rd, rs1, shamt, registers, memory, pc):
     # print("slli")
     registers[rd] = registers[rs1] << shamt
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def srli(rd, rs1, shamt, registers, memory, pc):
     """
@@ -291,7 +291,7 @@ def srli(rd, rs1, shamt, registers, memory, pc):
     # print("srli")
     registers[rd] = registers[rs1] >> shamt
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def srai(rd, rs1, shamt, registers, memory, pc):
     """
@@ -301,7 +301,7 @@ def srai(rd, rs1, shamt, registers, memory, pc):
     # print("srai")
     registers[rd] = registers[rs1] >> shamt
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def add(rd, rs1, rs2, registers, memory, pc):
     """
@@ -311,7 +311,7 @@ def add(rd, rs1, rs2, registers, memory, pc):
     # print("add")
     registers[rd] = registers[rs1] + registers[rs2]
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def sub(rd, rs1, rs2, registers, memory, pc):
     """
@@ -321,7 +321,7 @@ def sub(rd, rs1, rs2, registers, memory, pc):
     # print("sub")
     registers[rd] = registers[rs1] - registers[rs2]
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def sll(rd, rs1, rs2, registers, memory, pc):
     """
@@ -331,7 +331,7 @@ def sll(rd, rs1, rs2, registers, memory, pc):
     # print("sll")
     registers[rd] = registers[rs1] << (registers[rs2] & 0x1F)
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
     
 def slt(rd, rs1, rs2, registers, memory, pc):
     """
@@ -341,7 +341,7 @@ def slt(rd, rs1, rs2, registers, memory, pc):
     # print("slt")
     registers[rd] = 1 if registers[rs1] < registers[rs2] else 0
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def sltu(rd, rs1, rs2, registers, memory, pc):
     """
@@ -351,7 +351,7 @@ def sltu(rd, rs1, rs2, registers, memory, pc):
     # print("sltu")
     registers[rd] = 1 if (registers[rs1] & 0xFFFFFFFF) < (registers[rs2] & 0xFFFFFFFF) else 0
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def xor(rd, rs1, rs2, registers, memory, pc):
     """
@@ -361,7 +361,7 @@ def xor(rd, rs1, rs2, registers, memory, pc):
     # print("xor")
     registers[rd] = registers[rs1] ^ registers[rs2]
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def srl(rd, rs1, rs2, registers, memory, pc):
     """
@@ -371,7 +371,7 @@ def srl(rd, rs1, rs2, registers, memory, pc):
     # print("srl")
     registers[rd] = registers[rs1] >> (registers[rs2] & 0x1F)
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def sra(rd, rs1, rs2, registers, memory, pc):
     """
@@ -381,7 +381,7 @@ def sra(rd, rs1, rs2, registers, memory, pc):
     # print("sra")
     registers[rd] = (registers[rs1] >> (registers[rs2] & 0x1F)) | (registers[rs1] & 0x80000000)
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def or_(rd, rs1, rs2, registers, memory, pc):
     """
@@ -391,7 +391,7 @@ def or_(rd, rs1, rs2, registers, memory, pc):
     # print("or")
     registers[rd] = registers[rs1] | registers[rs2]
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def and_(rd, rs1, rs2, registers, memory, pc):
     """
@@ -401,7 +401,7 @@ def and_(rd, rs1, rs2, registers, memory, pc):
     # print("and")
     registers[rd] = registers[rs1] & registers[rs2]
     # print("function: ",registers[rd])
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def loadnoc(rd, rs1, imm, registers, memory, pc):
     """
@@ -415,7 +415,7 @@ def loadnoc(rd, rs1, imm, registers, memory, pc):
         memory[address] = registers[rd]
     else:
         print("Address out of range for memory-mapped registers")
-    return registers, memory, pc + 4
+    return registers, memory, pc
 
 def sendnoc(registers, memory, pc):
     """
@@ -425,4 +425,4 @@ def sendnoc(registers, memory, pc):
     # print("sendnoc")
     # Hardcode the value 1 to MMR4 (address 0x4010)
     memory[0x4010] = 1
-    return registers, memory, pc + 4
+    return registers, memory, pc
