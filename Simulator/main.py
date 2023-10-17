@@ -334,9 +334,17 @@ def execute_instruction(binary_instruction):
             print("AND: ", rs1, rs2, rd)
             registers, memory, pc = and_(rd, rs1, rs2, registers, memory, pc)
         elif operation == 'LOADNOC':
-            pass
+            rd = registers_mapping.get(binary_instruction[20:25])
+            rs1 = registers_mapping.get(binary_instruction[12:17])
+            imm = int(binary_instruction[0:12], 2)
+            print("LOADNOC: ", rd, rs1, imm)
+            registers, memory, pc = loadnoc(rd, rs1, imm, registers, memory, pc)
         elif operation == 'STORENOC':
-            pass
+            rs2 = registers_mapping.get(binary_instruction[7:12])
+            rs1 = registers_mapping.get(binary_instruction[12:17])
+            imm = int(binary_instruction[0:12], 2)
+            print("STORENOC: ", rs1, rs2, imm)
+            registers, memory, pc = sendnoc(rs1, rs2, imm, registers, memory, pc)
         else:
             raise ValueError(f"Unsupported operation {operation}")
     return registers, memory, pc
@@ -357,7 +365,14 @@ def get_memory_address(binary_instruction):
             effective_address = registers[rs1] + imm
 
             return effective_address
+        elif operation == "LOADNOC":
+            imm = int(binary_instruction[0:12], 2)
+            rs1 = registers_mapping.get(int(binary_instruction[12:17], 2))
 
+            # Calculate the effective address for Memory Mapped Register
+            effective_address = registers[rs1] + imm + 0x4000
+
+            return effective_address
     return None  # Return None for instructions that don't access memory
 
 def read_binary_file(file_path):
@@ -438,7 +453,8 @@ opcode_to_instruction = {
         },
         "110": "OR",
         "111": "AND"
-    }
+    },
+    "1111111": "STORENOC",
 }
 
 registers_mapping = {
