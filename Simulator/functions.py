@@ -405,25 +405,24 @@ def and_(rd, rs1, rs2, registers, memory, pc):
 
 def loadnoc(rd, rs1, imm, registers, memory, pc):
     """
-    Description: simulate the LOADNOC (Load No Cache) instruction
-    Logic: rd ← m32(rs1+imm i), pc ← pc+4
+    Description: simulate the LOADNOC instruction
+    Logic: Store the data in register rs2 to memory-mapped registers at address (rs1+imm)
     """
     print("loadnoc")
     address = registers[rs1] + imm
-    registers[rd] = (memory[address] & 0xFF) | ((memory[address + 1] & 0xFF) << 8) | ((memory[address + 2] & 0xFF) << 16) | (memory[address + 3] << 24)
-    print("function: ",registers[rd])
+    # Check if the address is within the range of memory-mapped registers
+    if 0x4000 <= address <= 0x4013:
+        memory[address] = registers[rd]
+    else:
+        print("Address out of range for memory-mapped registers")
     return registers, memory, pc + 4
 
-def storenoc(rs1, rs2, imm, registers, memory, pc):
+def sendnoc(registers, memory, pc):
     """
-    Description: simulate the STORENOC (Store No Cache) instruction
-    Logic: m32(rs1+imm s) ← rs2[31:0], pc ← pc+4
+    Description: simulate the SENDNOC instruction
+    Logic: Write the integer 1 to the Memory Mapped Register with address 0x4010
     """
-    print("storenoc")
-    address = registers[rs1] + imm
-    memory[address] = registers[rs2] & 0xFF
-    memory[address + 1] = (registers[rs2] >> 8) & 0xFF
-    memory[address + 2] = (registers[rs2] >> 16) & 0xFF
-    memory[address + 3] = (registers[rs2] >> 24)
-    print(memory[address])
+    print("sendnoc")
+    # Hardcode the value 1 to MMR4 (address 0x4010)
+    memory[0x4010] = 1
     return registers, memory, pc + 4

@@ -333,6 +333,12 @@ def execute_instruction(binary_instruction):
             rd = registers_mapping.get(binary_instruction[20:25])
             print("AND: ", rs1, rs2, rd)
             registers, memory, pc = and_(rd, rs1, rs2, registers, memory, pc)
+        elif operation == 'LOADNOC':
+            pass
+        elif operation == 'STORENOC':
+            pass
+        else:
+            raise ValueError(f"Unsupported operation {operation}")
     return registers, memory, pc
 
 def get_memory_address(binary_instruction):
@@ -417,7 +423,8 @@ opcode_to_instruction = {
     "0100011": {
         "000": "SB",
         "001": "SH",
-        "010": "SW"
+        "010": "SW",
+        "011": "LOADNOC"
     },
     "0011011": {
         "000": "ADD",
