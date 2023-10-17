@@ -41,7 +41,40 @@ registers = registers = {
     "t5": "11110",
     "t6": "11111"
 }
-
+# registers = {
+#     "R0": "00000",
+#     "R1": "00001",
+#     "R2": "00010",
+#     "R3": "00011",
+#     "R4": "00100",
+#     "R5": "00101",
+#     "R6": "00110",
+#     "R7": "00111",
+#     "R8": "01000",
+#     "R9": "01001",
+#     "R10": "01010",
+#     "R11": "01011",
+#     "R12": "01100",
+#     "R13": "01101",
+#     "R14": "01110",
+#     "R15": "01111",
+#     "R16": "10000",
+#     "R17": "10001",
+#     "R18": "10010",
+#     "R19": "10011",
+#     "R20": "10100",
+#     "R21": "10101",
+#     "R22": "10110",
+#     "R23": "10111",
+#     "R24": "11000",
+#     "R25": "11001",
+#     "R26": "11010",
+#     "R27": "11011",
+#     "R28": "11100",
+#     "R29": "11101",
+#     "R30": "11110",
+#     "R31": "11111"
+# }
 
 # location_counter = 0  reset in every pass
 instruction_location = 0 # reset in every pass
@@ -73,7 +106,7 @@ def decimal_to_12bit_binary(imm):
 
 def s_type_to_binary(opcode, funct3, rs1, rs2, imm):
     if (
-		imm < -2048 or imm > 2047
+		imm < -2048 or imm > 2047 and funct3!="011"
     ):
         raise ValueError("Input values are out of range for S-type instruction.")
     
@@ -95,11 +128,9 @@ def s_type_to_binary(opcode, funct3, rs1, rs2, imm):
 def sb_type_to_binary(opcode, funct3, rs1, rs2, imm):
     if imm < -2048 or imm > 2047:
         raise ValueError("imm must be a 12-bit signed value (-2048 to 2047)")
-
     # Ensure that the immediate value is within a valid range for SB-type
     if imm % 2 != 0:
         raise ValueError("Immediate value must be even for SB-type instructions")
-
     # Create the binary representation
     imm_binary = decimal_to_12bit_binary(imm)+"0"
     opcode_bits = opcode
@@ -201,6 +232,7 @@ def convert_binary():
 					imm = line_tokens[no_of_operands]
 					register_2 = line_tokens[no_of_operands-1]
 					register_1 = line_tokens[no_of_operands-2]
+					print(imm)
 					sub_bin = s_type_to_binary(opcode, function_3_value, registers[register_1], registers[register_2], int(imm))
 					bin_program.append(sub_bin)
 				elif type == "SB":
@@ -222,6 +254,9 @@ def convert_binary():
 					dest_register = line_tokens[no_of_operands-1]
 					sub_bin = uj_type_assembly_to_binary(int(imm),registers[dest_register],opcode)
 					bin_program.append(sub_bin)
+		elif operation=="STORENOC":
+			sub_bin = "00000000000000000000000001111111"
+			bin_program.append(sub_bin)
 
 def main():
 	global program
