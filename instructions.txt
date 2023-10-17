@@ -35,3 +35,5 @@ SRL ra a1 a2
 SRA ra a1 a2
 OR ra a1 a2
 AND ra a1 a2
+LOADNOC ra a1 20
+STORENOC
