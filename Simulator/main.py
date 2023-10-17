@@ -19,28 +19,38 @@ def simulate():
     }
 
     with open('simulation.log', 'w') as log_file:
-        for i in range(0, len(instructions)):
-            # Handle instruction forwarding and stall
-            if i >= MEM:
-                if pipeline[MEM]["instruction"] and pipeline[EX]["instruction"]:
-                    if pipeline[EX]["instruction"][:7] == "0000011" and get_memory_address(pipeline[EX]["instruction"]) == get_memory_address(pipeline[MEM]["instruction"]):
-                        # Data hazard detected, stall the pipeline
-                        for i in range(WB, IF - 1, -1):
-                            pipeline[i] = pipeline[i - 1]
-                        pipeline[IF] = {"instruction": None, "stall": True}
+        halt_detected = False
+        while not halt_detected:
+            # Detect hazards and decide whether to stall or not
+            stall = False
+            if pc >= IF and pc < MEM:
+                if pipeline[EX]["instruction"]:
+                    # Handle data hazards
+                    if pipeline[EX]["instruction"][:7] == "0000011":
+                        ex_mem_read_address = get_memory_address(pipeline[EX]["instruction"])
+                        if pipeline[IF]["instruction"] and get_memory_address(pipeline[IF]["instruction"]) == ex_mem_read_address:
+                            # Data hazard detected, stall the pipeline
+                            stall = True
             
             # Update the pipeline stages
             for i in range(WB, IF, -1):
                 pipeline[i] = pipeline[i - 1]
 
-            if pipeline[IF]["stall"]:
-                pipeline[IF] = {"instruction": None, "stall": False}
+            # Check for halt or end of instructions
+            if pc >= len(instructions):
+                halt_detected = True
             else:
-                instruction = instructions[i]
-                pipeline[IF] = {"instruction": instruction, "stall": False}
+                instruction = instructions[pc]
+                pc += 1
 
+            # Handle stall
+            if stall:
+                pipeline[IF] = {"instruction": None, "stall": True}
+            else:
+                pipeline[IF] = {"instruction": instruction, "stall": False}
+            
             # Log the current clock cycle's pipeline state
-            clock_cycle_log = {"cycle": clock_cycles, "stages": pipeline.copy(), "registers": registers.copy()}
+            clock_cycle_log = {"cycle": clock_cycles, "stages": pipeline.copy(), "registers": registers.copy(), "memory": memory.copy(), "cache": cache.copy()}
             simulation_log.append(clock_cycle_log)
             
             if pipeline[MEM]["instruction"]:
@@ -50,13 +60,12 @@ def simulate():
                 # Update the cache and memory for memory operations
                 memory_address = get_memory_address(pipeline[MEM]["instruction"])
                 if memory_address is not None:
-                    if pipeline[MEM]["instruction"].startswith("0000011"):
+                    if pipeline[MEM]["instruction"].startswith("0000011") or pipeline[MEM]["instruction"].startswith("0000010"):
                         cache_hit = update_cache_LRU(cache, memory_address, sets)
                         if cache_hit:
                             cache_hits += 1
                         else:
                             cache_misses += 1
-                    # Handle memory read/write here
                     if pipeline[MEM]["instruction"].startswith("0000011"):  # Memory read
                         read_data = memory[memory_address]
                         registers[registers_mapping[pipeline[MEM]["instruction"][20:25]]] = read_data
@@ -74,6 +83,7 @@ def simulate():
                     log_file.write(f"{pipeline_stages[i]} - {stage['instruction']}\n")
             log_file.write("Registers: " + str(clock_cycle_log["registers"]) + "\n")
             log_file.write("-" * 50 + "\n")
+            print("pc: ", pc)
 
     # Print cache statistics
     print("Cache Hits:", cache_hits)
@@ -221,7 +231,7 @@ def execute_instruction(binary_instruction):
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            # print("ADDI: ", imm, rs1, rd)
+            print("ADDI: ", imm, rs1, rd)
             registers, memory, pc = addi(rd, rs1, imm, registers, memory, pc)
         elif operation == 'SLTI':
             imm = int(binary_instruction[0:12], 2)
@@ -534,6 +544,8 @@ cache = {}
 
 # Load instructions into the memory
 instructions = read_binary_file("./output.bin")
+
+print(instructions)
 
 pc = 0  # Program counter
 

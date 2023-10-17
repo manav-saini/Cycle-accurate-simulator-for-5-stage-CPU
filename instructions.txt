@@ -1,26 +1,24 @@
-LUI ra 1000
-AUIPC ra 1000
-JAL ra 1000
-JALR ra a1 1000
-BEQ a1 a2 1000
-BNE a1 a2 1000
-BLT a1 a2 1000
-BGE a1 a2 1000
-BLTU a1 a2 1000
-BGEU a1 a2 1000
-LB ra a1 1000
-LH ra a1 1000
-LW ra a1 1000
-LBU ra a1 1000
-LHU ra a1 1000
-SB a1 a2 1000
-SH a1 a2 1000
-SW a1 a2 1000
-ADDI ra a1 1000
-SLTI ra a1 1000
-SLTIU ra a1 1000
-XORI ra a1 1000
-ORI ra a1 1000
+LUI ra 20
+AUIPC ra 20
+BEQ a1 a2 20
+BNE a1 a2 20
+BLT a1 a2 20
+BGE a1 a2 20
+BLTU a1 a2 20
+BGEU a1 a2 20
+LB ra a1 20
+LH ra a1 20
+LW ra a1 20
+LBU ra a1 20
+LHU ra a1 20
+SB a1 a2 20
+SH a1 a2 20
+SW a1 a2 20
+ADDI ra a1 20
+SLTI ra a1 20
+SLTIU ra a1 20
+XORI ra a1 20
+ORI ra a1 20
 SLLI ra a1 shamt
 SRLI ra a1 shamt
 SRAI ra a1 shamt
