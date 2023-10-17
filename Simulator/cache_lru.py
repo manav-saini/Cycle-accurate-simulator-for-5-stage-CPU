@@ -17,30 +17,30 @@ sets={
 def update(addr, setno):
   global sets
   if sets[setno]["ru"]==None:
-    print("Miss")
+    # print("Miss")
     sets[setno]["data"][0]=addr
     sets[setno]["ru"]=0
   else:
     if addr in sets[setno]["data"]:
-      print("Hit")
+      # print("Hit")
       # print("before", sets[setno]["ru"])
       sets[setno]["ru"]=sets[setno]["data"].index(addr)
       # print("after", sets[setno]["ru"])
     else:
-      print("Miss")
+      # print("Miss")
       # print("before", sets[setno]["ru"])
       upind=1-sets[setno]["ru"]
       sets[setno]["data"][upind]=addr
       sets[setno]["ru"]=upind
       # print("after", sets[setno]["ru"])
 
-dummy=["000001110000", "000010000000", '000001101000', '000110010000', '000010000100', '000101111000', '000010001100', '111100000000']
+# dummy=["000001110000", "000010000000", '000001101000', '000110010000', '000010000100', '000101111000', '000010001100', '111100000000']
 
-for i in dummy:
-  addr=i[:-5]
-  ind=i[-7:-5]
-  update(addr, ind)
-  print(addr)
-  print(ind)
-  print(sets)
-  print()
+# for i in dummy:
+#   addr=i[:-5]
+#   ind=i[-7:-5]
+#   update(addr, ind)
+#   print(addr)
+#   print(ind)
+#   print(sets)
+#   print()
