@@ -93,7 +93,7 @@ def execute_instruction(binary_instruction):
     global registers
     global memory
     global pc
-    print("execute_instruction: ", binary_instruction)
+    # print("execute_instruction: ", binary_instruction)
     opcode = binary_instruction[25:32]
     funct3 = binary_instruction[17:20]
     funct7 = binary_instruction[0:7]
@@ -115,79 +115,77 @@ def execute_instruction(binary_instruction):
         if operation == 'LUI':
             imm = int(binary_instruction[0:20], 2)
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("LUI: ", imm, rd)
-            print("[]: ",registers[rd])
-            print("get: ",registers.get(rd))
+            # print("LUI: ", imm, rd)
             registers, memory, pc = lui(rd, imm, registers, memory, pc)
         elif operation == 'AUIPC':
             imm = int(binary_instruction[0:20], 2)
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("AUIPC: ", imm, rd)
+            # print("AUIPC: ", imm, rd)
             registers, memory, pc = auipc(rd, imm, registers, memory, pc)
         elif operation == 'JAL':
             imm = int(binary_instruction[0]) << 20 | int(binary_instruction[12:20], 2) << 12 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("JAL: ", imm, rd)
+            # print("JAL: ", imm, rd)
             registers, memory, pc = jal(rd, imm, registers, memory, pc)
         elif operation == 'JALR':
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("JALR: ", imm, rs1, rd)
+            # print("JALR: ", imm, rs1, rd)
             registers, memory, pc = jalr(rd, rs1, imm, registers, memory, pc)
         elif operation == 'BEQ':
             imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
-            print("BEQ: ", imm, rs1, rs2)
+            # print("BEQ: ", imm, rs1, rs2)
             registers, memory, pc = beq(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'BNE':
             imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
-            print("BNE: ", imm, rs1, rs2)
+            # print("BNE: ", imm, rs1, rs2)
             registers, memory, pc = bne(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'BLT':
             imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
-            print("BLT: ", imm, rs1, rs2)
+            # print("BLT: ", imm, rs1, rs2)
             registers, memory, pc = blt(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'BGE':
             imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
-            print("BGE: ", imm, rs1, rs2)
+            # print("BGE: ", imm, rs1, rs2)
             registers, memory, pc = bge(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'BLTU':
             imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
-            print("BLTU: ", imm, rs1, rs2)
+            # print("BLTU: ", imm, rs1, rs2)
             registers, memory, pc = bltu(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'BGEU':
             imm = int(binary_instruction[0]) << 12 | int(binary_instruction[12:20], 2) << 5 | int(binary_instruction[11]) << 11 | int(binary_instruction[1:11], 2) << 1
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
-            print("BGEU: ", imm, rs1, rs2)
+            # print("BGEU: ", imm, rs1, rs2)
             registers, memory, pc = bgeu(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'LB':
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("LB: ", imm, rs1, rd)
+            # print("LB: ", imm, rs1, rd)
             registers, memory, pc = lb(rd, rs1, imm, registers, memory, pc)
         elif operation == 'LH':
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("LH: ", imm, rs1, rd)
+            # print("LH: ", imm, rs1, rd)
             registers, memory, pc = lh(rd, rs1, imm, registers, memory, pc)
         elif operation == 'LW':
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("LW: ", imm, rs1, rd)
+            # print("LW: ", imm, rs1, rd)
             registers, memory, pc = lw(rd, rs1, imm, registers, memory, pc)
         elif operation == 'LBU':
             imm = int(binary_instruction[0:12], 2)
@@ -199,151 +197,151 @@ def execute_instruction(binary_instruction):
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("LHU: ", imm, rs1, rd)
+            # print("LHU: ", imm, rs1, rd)
             registers, memory, pc = lhu(rd, rs1, imm, registers, memory, pc)
         elif operation == 'SB':
             imm = int(binary_instruction[0:12], 2)
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
-            print("SB: ", imm, rs1, rs2)
+            # print("SB: ", imm, rs1, rs2)
             registers, memory, pc = sb(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'SH':
             imm = int(binary_instruction[0:12], 2)
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
-            print("SH: ", imm, rs1, rs2)
+            # print("SH: ", imm, rs1, rs2)
             registers, memory, pc = sh(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'SW':
             imm = int(binary_instruction[0:12], 2)
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
-            print("SW: ", imm, rs1, rs2)
+            # print("SW: ", imm, rs1, rs2)
             registers, memory, pc = sw(rs1, rs2, imm, registers, memory, pc)
         elif operation == 'ADDI':
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("ADDI: ", imm, rs1, rd)
+            # print("ADDI: ", imm, rs1, rd)
             registers, memory, pc = addi(rd, rs1, imm, registers, memory, pc)
         elif operation == 'SLTI':
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("SLTI: ", imm, rs1, rd)
+            # print("SLTI: ", imm, rs1, rd)
             registers, memory, pc = slti(rd, rs1, imm, registers, memory, pc)
         elif operation == 'SLTIU':
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("SLTIU: ", imm, rs1, rd)
+            # print("SLTIU: ", imm, rs1, rd)
             registers, memory, pc = sltiu(rd, rs1, imm, registers, memory, pc)
         elif operation == 'XORI':
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("XORI: ", imm, rs1, rd)
+            # print("XORI: ", imm, rs1, rd)
             registers, memory, pc = xori(rd, rs1, imm, registers, memory, pc)
         elif operation == 'ORI':
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("ORI: ", imm, rs1, rd)
+            # print("ORI: ", imm, rs1, rd)
             registers, memory, pc = ori(rd, rs1, imm, registers, memory, pc)
         elif operation == 'ANDI':
             imm = registers_mapping.get(binary_instruction[0:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("ANDI: ", imm, rs1, rd)
+            # print("ANDI: ", imm, rs1, rd)
             registers, memory, pc = andi(rd, rs1, imm, registers, memory, pc)
         elif operation == 'SLLI':
             shamt = registers_mapping.get(binary_instruction[20:25])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("SLLI: ", shamt, rs1, rd)
+            # print("SLLI: ", shamt, rs1, rd)
             registers, memory, pc = slli(rd, rs1, shamt, registers, memory, pc)
         elif operation == 'SRLI':
             shamt = registers_mapping.get(binary_instruction[20:25])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("SRLI: ", shamt, rs1, rd)
+            # print("SRLI: ", shamt, rs1, rd)
             registers, memory, pc = srli(rd, rs1, shamt, registers, memory, pc)
         elif operation == 'SRAI':
             shamt = registers_mapping.get(binary_instruction[20:25])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("SRAI: ", shamt, rs1, rd)
+            # print("SRAI: ", shamt, rs1, rd)
             registers, memory, pc = srai(rd, rs1, shamt, registers, memory, pc)
         elif operation == 'ADD':
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("ADD: ", rs1, rs2, rd)
+            # print("ADD: ", rs1, rs2, rd)
             registers, memory, pc = add(rd, rs1, rs2, registers, memory, pc)
         elif operation == 'SUB':
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("SUB: ", rs1, rs2, rd)
+            # print("SUB: ", rs1, rs2, rd)
             registers, memory, pc = sub(rd, rs1, rs2, registers, memory, pc)
         elif operation == 'SLL':
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("SLL: ", rs1, rs2, rd)
+            # print("SLL: ", rs1, rs2, rd)
             registers, memory, pc = sll(rd, rs1, rs2, registers, memory, pc)
         elif operation == 'SLT':
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("SLT: ", rs1, rs2, rd)
+            # print("SLT: ", rs1, rs2, rd)
             registers, memory, pc = slt(rd, rs1, rs2, registers, memory, pc)
         elif operation == 'SLTU':
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("SLTU: ", rs1, rs2, rd)
+            # print("SLTU: ", rs1, rs2, rd)
             registers, memory, pc = sltu(rd, rs1, rs2, registers, memory, pc)
         elif operation == 'XOR':
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("XOR: ", rs1, rs2, rd)
+            # print("XOR: ", rs1, rs2, rd)
             registers, memory, pc = xor(rd, rs1, rs2, registers, memory, pc)
         elif operation == 'SRL':
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("SRL: ", rs1, rs2, rd)
+            # print("SRL: ", rs1, rs2, rd)
             registers, memory, pc = srl(rd, rs1, rs2, registers, memory, pc)
         elif operation == 'SRA':
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("SRA: ", rs1, rs2, rd)
+            # print("SRA: ", rs1, rs2, rd)
             registers, memory, pc = sra(rd, rs1, rs2, registers, memory, pc)
         elif operation == 'OR':
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("OR: ", rs1, rs2, rd)
+            # print("OR: ", rs1, rs2, rd)
             registers, memory, pc = or_(rd, rs1, rs2, registers, memory, pc)
         elif operation == 'AND':
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("AND: ", rs1, rs2, rd)
+            # print("AND: ", rs1, rs2, rd)
             registers, memory, pc = and_(rd, rs1, rs2, registers, memory, pc)
         elif operation == 'LOADNOC':
             rd = registers_mapping.get(binary_instruction[20:25])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             imm = int(binary_instruction[0:12], 2)
-            print("LOADNOC: ", rd, rs1, imm)
+            # print("LOADNOC: ", rd, rs1, imm)
             registers, memory, pc = loadnoc(rd, rs1, imm, registers, memory, pc)
         elif operation == 'STORENOC':
             rs2 = registers_mapping.get(binary_instruction[7:12])
             rs1 = registers_mapping.get(binary_instruction[12:17])
             imm = int(binary_instruction[0:12], 2)
-            print("STORENOC: ", rs1, rs2, imm)
+            # print("STORENOC: ", rs1, rs2, imm)
             registers, memory, pc = sendnoc(rs1, rs2, imm, registers, memory, pc)
         else:
             raise ValueError(f"Unsupported operation {operation}")
