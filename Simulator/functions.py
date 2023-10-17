@@ -402,3 +402,28 @@ def and_(rd, rs1, rs2, registers, memory, pc):
     registers[rd] = registers[rs1] & registers[rs2]
     print("function: ",registers[rd])
     return registers, memory, pc + 4
+
+def loadnoc(rd, rs1, imm, registers, memory, pc):
+    """
+    Description: simulate the LOADNOC (Load No Cache) instruction
+    Logic: rd ← m32(rs1+imm i), pc ← pc+4
+    """
+    print("loadnoc")
+    address = registers[rs1] + imm
+    registers[rd] = (memory[address] & 0xFF) | ((memory[address + 1] & 0xFF) << 8) | ((memory[address + 2] & 0xFF) << 16) | (memory[address + 3] << 24)
+    print("function: ",registers[rd])
+    return registers, memory, pc + 4
+
+def storenoc(rs1, rs2, imm, registers, memory, pc):
+    """
+    Description: simulate the STORENOC (Store No Cache) instruction
+    Logic: m32(rs1+imm s) ← rs2[31:0], pc ← pc+4
+    """
+    print("storenoc")
+    address = registers[rs1] + imm
+    memory[address] = registers[rs2] & 0xFF
+    memory[address + 1] = (registers[rs2] >> 8) & 0xFF
+    memory[address + 2] = (registers[rs2] >> 16) & 0xFF
+    memory[address + 3] = (registers[rs2] >> 24)
+    print(memory[address])
+    return registers, memory, pc + 4
