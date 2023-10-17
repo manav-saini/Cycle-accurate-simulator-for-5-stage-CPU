@@ -18,54 +18,67 @@ def simulate():
         "11": {"ru": None, "data": [None, None]}
     }
 
-    for i in range(0, len(instructions)):
-        if all(pipeline[i]["instruction"] is None for i in range(EX, MEM + 1)):
-            # If no instruction is in EX, MEM, WB stages, we can advance the pipeline.
-            for i in range(MEM, IF, -1):
+    with open('simulation.log', 'w') as log_file:
+        for i in range(0, len(instructions)):
+            # Handle instruction forwarding and stall
+            if i >= MEM:
+                if pipeline[MEM]["instruction"] and pipeline[EX]["instruction"]:
+                    if pipeline[EX]["instruction"][:7] == "0000011" and get_memory_address(pipeline[EX]["instruction"]) == get_memory_address(pipeline[MEM]["instruction"]):
+                        # Data hazard detected, stall the pipeline
+                        for i in range(WB, IF - 1, -1):
+                            pipeline[i] = pipeline[i - 1]
+                        pipeline[IF] = {"instruction": None, "stall": True}
+            
+            # Update the pipeline stages
+            for i in range(WB, IF, -1):
                 pipeline[i] = pipeline[i - 1]
-            instruction = instructions[i]
-            pipeline[IF] = {"instruction": instruction, "stall": False}
-        else:
-            # If there are instructions in EX, MEM, or WB stages, we need to stall IF and ID stages.
-            for i in range(ID, IF, -1):
-                pipeline[i] = pipeline[i - 1]
-            pipeline[ID] = {"instruction": None, "stall": True}
 
-        # Log the current clock cycle's pipeline state
-        clock_cycle_log = {"cycle": clock_cycles, "stages": pipeline.copy(), "registers": registers.copy()}
-        simulation_log.append(clock_cycle_log)
+            if pipeline[IF]["stall"]:
+                pipeline[IF] = {"instruction": None, "stall": False}
+            else:
+                instruction = instructions[i]
+                pipeline[IF] = {"instruction": instruction, "stall": False}
 
-        # Execute instructions in MEM and WB stages
-        execute_instruction(pipeline[MEM]["instruction"])
-        execute_instruction(pipeline[WB]["instruction"])
+            # Log the current clock cycle's pipeline state
+            clock_cycle_log = {"cycle": clock_cycles, "stages": pipeline.copy(), "registers": registers.copy()}
+            simulation_log.append(clock_cycle_log)
+            
+            if pipeline[MEM]["instruction"]:
+                # Execute instructions in MEM and WB stages
+                execute_instruction(pipeline[MEM]["instruction"])
 
-        # Update the cache and memory for memory operations
-        if pipeline[MEM]["instruction"]:
-            memory_address = get_memory_address(pipeline[MEM]["instruction"])
-            if memory_address is not None:
-                if pipeline[MEM]["instruction"].startswith("0000011"):
-                    cache_hit = update_cache_LRU(cache, memory_address, sets)
-                    if cache_hit:
-                        cache_hits += 1
-                    else:
-                        cache_misses += 1
-                # Handle memory read/write here
+                # Update the cache and memory for memory operations
+                memory_address = get_memory_address(pipeline[MEM]["instruction"])
+                if memory_address is not None:
+                    if pipeline[MEM]["instruction"].startswith("0000011"):
+                        cache_hit = update_cache_LRU(cache, memory_address, sets)
+                        if cache_hit:
+                            cache_hits += 1
+                        else:
+                            cache_misses += 1
+                    # Handle memory read/write here
+                    if pipeline[MEM]["instruction"].startswith("0000011"):  # Memory read
+                        read_data = memory[memory_address]
+                        registers[registers_mapping[pipeline[MEM]["instruction"][20:25]]] = read_data
+                    elif pipeline[MEM]["instruction"].startswith("0000010"):  # Memory write
+                        write_data = registers[registers_mapping[pipeline[MEM]["instruction"][20:25]]]
+                        memory[memory_address] = write_data
 
-        # Increment clock cycles
-        clock_cycles += 1
+            # Increment clock cycles
+            clock_cycles += 1
+
+            # Write the log to the log file
+            log_file.write(f"Clock Cycle {clock_cycle_log['cycle']}:\n")
+            for i, stage in enumerate(clock_cycle_log["stages"]):
+                if stage["instruction"]:
+                    log_file.write(f"{pipeline_stages[i]} - {stage['instruction']}\n")
+            log_file.write("Registers: " + str(clock_cycle_log["registers"]) + "\n")
+            log_file.write("-" * 50 + "\n")
 
     # Print cache statistics
     print("Cache Hits:", cache_hits)
     print("Cache Misses:", cache_misses)
 
-    # Print the simulation log
-    for entry in simulation_log:
-        print(f"Clock Cycle {entry['cycle']}:")
-        for i, stage in enumerate(entry["stages"]):
-            if stage["instruction"]:
-                print(f"{pipeline_stages[i]} - {stage['instruction']}")
-        print("Registers:", entry["registers"])
-        print("-" * 50)
 
 # Define the update_cache_LRU function
 def update_cache_LRU(cache, memory_address, sets):
@@ -80,7 +93,7 @@ def execute_instruction(binary_instruction):
     global registers
     global memory
     global pc
-    # print("execute_instruction: ", binary_instruction)
+    print("execute_instruction: ", binary_instruction)
     opcode = binary_instruction[25:32]
     funct3 = binary_instruction[17:20]
     funct7 = binary_instruction[0:7]
