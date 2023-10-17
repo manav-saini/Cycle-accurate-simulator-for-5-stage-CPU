@@ -20,9 +20,11 @@ def simulate():
 
     with open('simulation.log', 'w') as log_file:
         halt_detected = False
-        while not halt_detected:
+        stall_detected = False  # Flag to detect data hazards
+        while not halt_detected and pc < len(instructions):
             # Detect hazards and decide whether to stall or not
             stall = False
+
             if pc >= IF and pc < MEM:
                 if pipeline[EX]["instruction"]:
                     # Handle data hazards
@@ -31,28 +33,29 @@ def simulate():
                         if pipeline[IF]["instruction"] and get_memory_address(pipeline[IF]["instruction"]) == ex_mem_read_address:
                             # Data hazard detected, stall the pipeline
                             stall = True
-            
+                            stall_detected = True  # Set the stall_detected flag
+
             # Update the pipeline stages
             for i in range(WB, IF, -1):
                 pipeline[i] = pipeline[i - 1]
 
-            # Check for halt or end of instructions
-            if pc >= len(instructions):
-                halt_detected = True
-            else:
-                instruction = instructions[pc]
-                pc += 1
-
             # Handle stall
             if stall:
                 pipeline[IF] = {"instruction": None, "stall": True}
+                stall_detected = True  # Set the stall_detected flag
             else:
+                instruction = instructions[pc]
+                pc += 1
                 pipeline[IF] = {"instruction": instruction, "stall": False}
-            
+
+            # If there is no stall, reset the stall_detected flag
+            if not stall:
+                stall_detected = False
+
             # Log the current clock cycle's pipeline state
             clock_cycle_log = {"cycle": clock_cycles, "stages": pipeline.copy(), "registers": registers.copy(), "memory": memory.copy(), "cache": cache.copy()}
             simulation_log.append(clock_cycle_log)
-            
+
             if pipeline[MEM]["instruction"]:
                 # Execute instructions in MEM and WB stages
                 execute_instruction(pipeline[MEM]["instruction"])
@@ -82,8 +85,10 @@ def simulate():
                 if stage["instruction"]:
                     log_file.write(f"{pipeline_stages[i]} - {stage['instruction']}\n")
             log_file.write("Registers: " + str(clock_cycle_log["registers"]) + "\n")
+            log_file.write("Memory: " + str(clock_cycle_log["memory"]) + "\n")
+            log_file.write("Cache: " + str(clock_cycle_log["cache"]) + "\n")
             log_file.write("-" * 50 + "\n")
-            print("pc: ", pc)
+            print("pc:", pc)
 
     # Print cache statistics
     print("Cache Hits:", cache_hits)
@@ -231,7 +236,7 @@ def execute_instruction(binary_instruction):
             imm = int(binary_instruction[0:12], 2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
-            print("ADDI: ", imm, rs1, rd)
+            # print("ADDI: ", imm, rs1, rd)
             registers, memory, pc = addi(rd, rs1, imm, registers, memory, pc)
         elif operation == 'SLTI':
             imm = int(binary_instruction[0:12], 2)

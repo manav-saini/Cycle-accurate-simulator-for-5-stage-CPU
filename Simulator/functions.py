@@ -56,9 +56,9 @@ def beq(rs1, rs2, imm, registers, memory, pc):
     """
     # print("beq")
     if registers[rs1] == registers[rs2]:
-        pc += imm
-    else:
-        pc += 4
+        pc += (imm//4)
+    # else:
+    #     pc += 4
     return registers, memory, pc
 
 def bne(rs1, rs2, imm, registers, memory, pc):
@@ -68,9 +68,9 @@ def bne(rs1, rs2, imm, registers, memory, pc):
     """
     # print("bne")
     if registers[rs1] != registers[rs2]:
-        pc += imm
-    else:
-        pc += 4
+        pc += (imm//4)
+    # else:
+    #     pc += 4
     return registers, memory, pc
 
 def blt(rs1, rs2, imm, registers, memory, pc):
@@ -80,9 +80,9 @@ def blt(rs1, rs2, imm, registers, memory, pc):
     """
     # print("blt")
     if registers[rs1] < registers[rs2]:
-        pc += imm
-    else:
-        pc += 4
+        pc += (imm//4)
+    # else:
+    #     pc += 4
     return registers, memory, pc
 
 def bge(rs1, rs2, imm, registers, memory, pc):
@@ -92,9 +92,9 @@ def bge(rs1, rs2, imm, registers, memory, pc):
     """
     # print("bge")
     if registers[rs1] >= registers[rs2]:
-        pc += imm
-    else:
-        pc += 4
+        pc += (imm//4)
+    # else:
+    #     pc += 4
     return registers, memory, pc
 
 def bltu(rs1, rs2, imm, registers, memory, pc):
@@ -104,9 +104,9 @@ def bltu(rs1, rs2, imm, registers, memory, pc):
     """
     # print("bltu")
     if registers[rs1] < registers[rs2]:
-        pc += imm
-    else:
-        pc += 4
+        pc += (imm//4)
+    # else:
+    #     pc += 4
     return registers, memory, pc
 
 def bgeu(rs1, rs2, imm, registers, memory, pc):
@@ -116,9 +116,9 @@ def bgeu(rs1, rs2, imm, registers, memory, pc):
     """
     # print("bgeu")
     if registers[rs1] >= registers[rs2]:
-        pc += imm
-    else:
-        pc += 4
+        pc += (imm//4)
+    # else:
+    #     pc += 4
     return registers, memory, pc
 
 def lb(rd, rs1, imm, registers, memory, pc):
