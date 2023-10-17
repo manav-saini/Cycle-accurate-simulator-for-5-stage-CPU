@@ -232,7 +232,7 @@ def main():
 	convert_binary()
 	output_file_path = "output.bin"
 	# Open the binary file for writing in binary mode
-	print(bin_program)
+	print("bin_program: ", bin_program)
 	with open(output_file_path, "wb") as binary_file:
 		for binary_str in bin_program:
 			# Convert the binary string to bytes and write it to the binary file
