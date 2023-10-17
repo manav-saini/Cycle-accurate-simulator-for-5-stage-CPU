@@ -20,7 +20,6 @@ def simulate():
 
     with open('simulation.log', 'w') as log_file:
         halt_detected = False
-        stall_detected = False  # Flag to detect data hazards
         while not halt_detected and pc < len(instructions):
             # Detect hazards and decide whether to stall or not
             stall = False
@@ -33,7 +32,7 @@ def simulate():
                         if pipeline[IF]["instruction"] and get_memory_address(pipeline[IF]["instruction"]) == ex_mem_read_address:
                             # Data hazard detected, stall the pipeline
                             stall = True
-                            stall_detected = True  # Set the stall_detected flag
+                            pc -= 1  # Revert PC to fetch the instruction again
 
             # Update the pipeline stages
             for i in range(WB, IF, -1):
@@ -42,15 +41,10 @@ def simulate():
             # Handle stall
             if stall:
                 pipeline[IF] = {"instruction": None, "stall": True}
-                stall_detected = True  # Set the stall_detected flag
             else:
                 instruction = instructions[pc]
                 pc += 1
                 pipeline[IF] = {"instruction": instruction, "stall": False}
-
-            # If there is no stall, reset the stall_detected flag
-            if not stall:
-                stall_detected = False
 
             # Log the current clock cycle's pipeline state
             clock_cycle_log = {"cycle": clock_cycles, "stages": pipeline.copy(), "registers": registers.copy(), "memory": memory.copy(), "cache": cache.copy()}
@@ -59,7 +53,6 @@ def simulate():
             if pipeline[MEM]["instruction"]:
                 # Execute instructions in MEM and WB stages
                 execute_instruction(pipeline[MEM]["instruction"])
-
                 # Update the cache and memory for memory operations
                 memory_address = get_memory_address(pipeline[MEM]["instruction"])
                 if memory_address is not None:
@@ -88,7 +81,7 @@ def simulate():
             log_file.write("Memory: " + str(clock_cycle_log["memory"]) + "\n")
             log_file.write("Cache: " + str(clock_cycle_log["cache"]) + "\n")
             log_file.write("-" * 50 + "\n")
-            print("pc:", pc)
+            print("pc ", pc)
 
     # Print cache statistics
     print("Cache Hits:", cache_hits)
@@ -108,13 +101,13 @@ def execute_instruction(binary_instruction):
     global registers
     global memory
     global pc
-    # print("execute_instruction: ", binary_instruction)
+    print("execute_instruction: ", binary_instruction)
     opcode = binary_instruction[25:32]
     funct3 = binary_instruction[17:20]
     funct7 = binary_instruction[0:7]
     
-    # print("execute_instruction opcode: ", opcode)
-    # print("execute_instruction funct3: ", funct3)
+    print("execute_instruction opcode: ", opcode)
+    print("execute_instruction funct3: ", funct3)
 
     if opcode in opcode_to_instruction:
         # print(opcode)
@@ -124,6 +117,11 @@ def execute_instruction(binary_instruction):
         if isinstance(operation, dict):
             if funct3 in operation:
                 operation = operation[funct3]
+                if isinstance(operation, dict):
+                    if funct7 in operation:
+                        operation = operation[funct7]
+                    else:
+                        raise ValueError(f"Unsupported funct7 {funct7} for opcode {opcode}")
             else:
                 raise ValueError(f"Unsupported funct3 {funct3} for opcode {opcode}")
 
@@ -454,7 +452,7 @@ opcode_to_instruction = {
         "010": "SW",
         "011": "LOADNOC"
     },
-    "0011011": {
+    "0110011": {
         "000": "ADD",
         "001": "SLL",
         "010": "SLT",

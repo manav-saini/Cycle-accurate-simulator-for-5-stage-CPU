@@ -57,8 +57,8 @@ def beq(rs1, rs2, imm, registers, memory, pc):
     # print("beq")
     if registers[rs1] == registers[rs2]:
         pc += (imm//4)
-    # else:
-    #     pc += 4
+    else:
+        pc += 1
     return registers, memory, pc
 
 def bne(rs1, rs2, imm, registers, memory, pc):
@@ -69,8 +69,8 @@ def bne(rs1, rs2, imm, registers, memory, pc):
     # print("bne")
     if registers[rs1] != registers[rs2]:
         pc += (imm//4)
-    # else:
-    #     pc += 4
+    else:
+        pc += 1
     return registers, memory, pc
 
 def blt(rs1, rs2, imm, registers, memory, pc):
@@ -81,8 +81,8 @@ def blt(rs1, rs2, imm, registers, memory, pc):
     # print("blt")
     if registers[rs1] < registers[rs2]:
         pc += (imm//4)
-    # else:
-    #     pc += 4
+    else:
+        pc += 1
     return registers, memory, pc
 
 def bge(rs1, rs2, imm, registers, memory, pc):
@@ -93,8 +93,8 @@ def bge(rs1, rs2, imm, registers, memory, pc):
     # print("bge")
     if registers[rs1] >= registers[rs2]:
         pc += (imm//4)
-    # else:
-    #     pc += 4
+    else:
+        pc += 1
     return registers, memory, pc
 
 def bltu(rs1, rs2, imm, registers, memory, pc):
@@ -105,8 +105,8 @@ def bltu(rs1, rs2, imm, registers, memory, pc):
     # print("bltu")
     if registers[rs1] < registers[rs2]:
         pc += (imm//4)
-    # else:
-    #     pc += 4
+    else:
+        pc += 1
     return registers, memory, pc
 
 def bgeu(rs1, rs2, imm, registers, memory, pc):
@@ -117,8 +117,8 @@ def bgeu(rs1, rs2, imm, registers, memory, pc):
     # print("bgeu")
     if registers[rs1] >= registers[rs2]:
         pc += (imm//4)
-    # else:
-    #     pc += 4
+    else:
+        pc += 1
     return registers, memory, pc
 
 def lb(rd, rs1, imm, registers, memory, pc):
@@ -308,7 +308,7 @@ def add(rd, rs1, rs2, registers, memory, pc):
     Description: simulate the ADD (Add) instruction
     Logic: rd ← rs1 + rs2, pc ← pc+4
     """
-    # print("add")
+    print("add")
     registers[rd] = registers[rs1] + registers[rs2]
     # print("function: ",registers[rd])
     return registers, memory, pc
