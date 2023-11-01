@@ -269,19 +269,19 @@ def execute_instruction(binary_instruction):
             # print("ANDI: ", imm, rs1, rd)
             registers, memory, pc = andi(rd, rs1, imm, registers, memory, pc)
         elif operation == 'SLLI':
-            shamt = registers_mapping.get(binary_instruction[20:25])
+            shamt = int(binary_instruction[7:12],2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
             # print("SLLI: ", shamt, rs1, rd)
             registers, memory, pc = slli(rd, rs1, shamt, registers, memory, pc)
         elif operation == 'SRLI':
-            shamt = registers_mapping.get(binary_instruction[20:25])
+            shamt = int(binary_instruction[7:12],2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
             # print("SRLI: ", shamt, rs1, rd)
             registers, memory, pc = srli(rd, rs1, shamt, registers, memory, pc)
         elif operation == 'SRAI':
-            shamt = registers_mapping.get(binary_instruction[20:25])
+            shamt = int(binary_instruction[7:12],2)
             rs1 = registers_mapping.get(binary_instruction[12:17])
             rd = registers_mapping.get(binary_instruction[20:25])
             # print("SRAI: ", shamt, rs1, rd)

@@ -19,9 +19,9 @@ SLTI ra a1 20
 SLTIU ra a1 20
 XORI ra a1 20
 ORI ra a1 20
-SLLI ra a1 shamt
-SRLI ra a1 shamt
-SRAI ra a1 shamt
+SLLI ra a1 10
+SRLI ra a1 20
+SRAI ra a1 30
 ADD ra a1 a2
 SUB ra a1 a2
 SLL ra a1 a2

@@ -149,6 +149,7 @@ def lw(rd, rs1, imm, registers, memory, pc):
     Logic: rd ← sx(m32(rs1+imm i)), pc ← pc+4
     """
     # print("lw")
+    print(registers[rs1])
     address = registers[rs1] + imm
     registers[rd] = (memory[address] & 0xFF) | ((memory[address + 1] & 0xFF) << 8) | ((memory[address + 2] & 0xFF) << 16) | (memory[address + 3] << 24)
     # print("function: ",registers[rd])
@@ -278,7 +279,6 @@ def slli(rd, rs1, shamt, registers, memory, pc):
     Description: simulate the SLLI (Shift Left Logical Immediate) instruction
     Logic: rd ← rs1 << shamt i, pc ← pc+4
     """
-    # print("slli")
     registers[rd] = registers[rs1] << shamt
     # print("function: ",registers[rd])
     return registers, memory, pc
