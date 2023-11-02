@@ -240,7 +240,7 @@ def sltiu(rd, rs1, imm, registers, memory, pc):
     Logic: rd ← (rs1 < imm i) ? 1 : 0, pc ← pc+4
     """
     # print("sltiu")
-    registers[rd] = 1 if registers[rs1] < imm else 0
+    registers[rd] = 1 if (registers[rs1] & 0xFFFFFFFF) < (imm & 0xFFFFFFFF) else 0
     # print("function: ",registers[rd])
     return registers, memory, pc
 
