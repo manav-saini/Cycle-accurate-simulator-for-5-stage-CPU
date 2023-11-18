@@ -1,0 +1,6 @@
+SW ra gp 2
+ADDI t0 t0 16
+ADDI a4 a4 4
+ADDI s9 s9 23
+SW ra sp 8
+SLL s4 gp ra
