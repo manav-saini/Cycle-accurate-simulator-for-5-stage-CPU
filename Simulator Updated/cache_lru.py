@@ -1,15 +1,14 @@
 from memory import memory_dict
 
 sets = {
-    "00": {"ru": None, "data": [None, None]},
-    "01": {"ru": None, "data": [None, None]},
-    "10": {"ru": None, "data": [None, None]},
-    "11": {"ru": None, "data": [None, None]}
+    0: {"ru": None, "data": [[None, None], [None, None]]},
+    1: {"ru": None, "data": [[None, None], [None, None]]},
+    2: {"ru": None, "data": [[None, None], [None, None]]},
+    3: {"ru": None, "data": [[None, None], [None, None]]}
 }
 
 misses = 0
 hits = 0
-
 
 def update(addr, setno):
     global sets
@@ -18,22 +17,32 @@ def update(addr, setno):
     if sets[setno]["ru"] == None:
         # print("Miss")
         misses += 1
-        sets[setno]["data"][0] = addr
+        value = memory_dict[addr]
+        sets[setno]["data"][0][0] = addr
+        sets[setno]["data"][0][1] = value
         sets[setno]["ru"] = 0
     else:
-        if addr in sets[setno]["data"]:
+        if addr == sets[setno]["data"][0][0]:
             # print("Hit")
             hits += 1
             #print("before", sets[setno]["ru"])
-            sets[setno]["ru"] = sets[setno]["data"].index(addr)
+            sets[setno]["ru"] = 0
+            value = sets[setno]["data"][0][1]
             # print("after", sets[setno]["ru"])
+        elif addr == sets[setno]["data"][1][0]:
+            hits += 1
+            #print("before", sets[setno]["ru"])
+            sets[setno]["ru"] = 1
+            value = sets[setno]["data"][0][1]
         else:
             # print("Miss")
             # print("before", sets[setno]["ru"])
             misses += 1
             upind = 1-sets[setno]["ru"]
-            sets[setno]["data"][upind] = addr
+            value = memory_dict[addr]
+            sets[setno]["data"][upind][0] = addr
+            sets[setno]["data"][upind][1] = value
             sets[setno]["ru"] = upind
             # print("after", sets[setno]["ru"])
 
-    return memory_dict[addr]
+    return (value, hits, misses)
