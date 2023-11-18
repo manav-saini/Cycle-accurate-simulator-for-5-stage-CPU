@@ -1,5 +1,5 @@
 from registerfile import temp_registers
-from memory import memory_dict
+from memory import *
 
 def lui(rd, imm):
     """
@@ -358,26 +358,20 @@ def and_(rd, rs1, rs2):
     temp_registers[rd] = result
     return [result]
 
-def loadnoc(rd, rs1, imm, registers, memory, pc):
+def loadnoc(rs2, rs1, imm, registers, memory, pc):
     """
     Description: simulate the LOADNOC instruction
     Logic: Store the data in register rs2 to memory-mapped registers at address (rs1+imm)
     """
     # print("loadnoc")
-    address =temp_registers[rs1] + imm
-    # Check if the address is within the range of memory-mapped registers
-    if 0x4000 <= address <= 0x4013:
-        memory[address] =temp_registers[rd]
-    else:
-        print("Address out of range for memory-mapped registers")
-    return registers, memory, pc
-
+    address = (temp_registers[rs1] + imm)%4
+    memory_mapped_reg[address]=temp_registers[rs2]
+    
 def sendnoc(registers, memory, pc):
     """
     Description: simulate the SENDNOC instruction
     Logic: Write the integer 1 to the Memory Mapped Register with address 0x4010
     """
-    # print("sendnoc")
+    
     # Hardcode the value 1 to MMR4 (address 0x4010)
-    memory[1023] = 1
-    return registers, memory, pc
+    memory_mapped_reg[3]=1
