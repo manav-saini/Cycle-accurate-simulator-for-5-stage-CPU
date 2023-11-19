@@ -1,9 +1,126 @@
 from memory import memory_dict, memory_mapped_reg
-from TABLES import opcode_to_instruction, registers, opcode_table, type_table
-from registerfile import temp_registers, registers_state
+from TABLES import opcode_to_instruction, registers, opcode_table
+from cache_lru import *
 from functions import *
 from scoreboard import in_process, ready_state
 
+sets = {
+    0: {"ru": None, "data": [[None, None], [None, None]]},
+    1: {"ru": None, "data": [[None, None], [None, None]]},
+    2: {"ru": None, "data": [[None, None], [None, None]]},
+    3: {"ru": None, "data": [[None, None], [None, None]]}
+}
+
+misses = 0
+hits = 0
+memory_accesses = 0
+
+def update(addr, setno):
+    global sets
+    global misses
+    global hits
+    if sets[setno]["ru"] == None:
+        # print("Miss")
+        misses += 1
+        value = memory_dict[addr]
+        sets[setno]["data"][0][0] = addr
+        sets[setno]["data"][0][1] = value
+        sets[setno]["ru"] = 0
+    else:
+        if addr == sets[setno]["data"][0][0]:
+            # print("Hit")
+            hits += 1
+            #print("before", sets[setno]["ru"])
+            sets[setno]["ru"] = 0
+            value = sets[setno]["data"][0][1]
+            # print("after", sets[setno]["ru"])
+        elif addr == sets[setno]["data"][1][0]:
+            hits += 1
+            #print("before", sets[setno]["ru"])
+            sets[setno]["ru"] = 1
+            value = sets[setno]["data"][0][1]
+        else:
+            # print("Miss")
+            # print("before", sets[setno]["ru"])
+            misses += 1
+            upind = 1-sets[setno]["ru"]
+            value = memory_dict[addr]
+            sets[setno]["data"][upind][0] = addr
+            sets[setno]["data"][upind][1] = value
+            sets[setno]["ru"] = upind
+            # print("after", sets[setno]["ru"])
+
+    return [value]
+
+registers_state = {
+'R0': 0,
+'R1': 0,
+'R2': 0,
+'R3': 0,
+'R4': 0,
+'R5': 0,
+'R6': 0,
+'R7': 0,
+'R8': 0,
+'R9': 0,
+'R10': 0,
+'R11': 0,
+'R12': 0,
+'R13': 0,
+'R14': 0,
+'R15': 0,
+'R16': 0,
+'R17': 0,
+'R18': 0,
+'R19': 0,
+'R20': 0,
+'R21': 0,
+'R22': 0,
+'R23': 0,
+'R24': 0,
+'R25': 0,
+'R26': 0,
+'R27': 0,
+'R28': 0,
+'R29': 0,
+'R30': 0,
+'R31': 0
+}
+
+temp_registers = {
+    'R0': 0,
+    'R1': 0,
+    'R2': 0,
+    'R3': 0,
+    'R4': 0,
+    'R5': 0,
+    'R6': 0,
+    'R7': 0,
+    'R8': 0,
+    'R9': 0,
+    'R10': 0,
+    'R11': 0,
+    'R12': 0,
+    'R13': 0,
+    'R14': 0,
+    'R15': 0,
+    'R16': 0,
+    'R17': 0,
+    'R18': 0,
+    'R19': 0,
+    'R20': 0,
+    'R21': 0,
+    'R22': 0,
+    'R23': 0,
+    'R24': 0,
+    'R25': 0,
+    'R26': 0,
+    'R27': 0,
+    'R28': 0,
+    'R29': 0,
+    'R30': 0,
+    'R31': 0
+}
 
 def read_binary_file(file_path):
     with open(file_path, "rb") as binary_file:
@@ -45,6 +162,8 @@ def fetch(instructions, pc):
 
 
 def decode(instruction):
+    if instruction == "00000000000000000000000001111111":
+        return "STORENOC", "N", -1, -1, -1, -1, -1, "STORENOC"
     opcode = instruction[-7:]
     func3_bits = -1
     func7_bits = -1
@@ -105,131 +224,191 @@ def decode(instruction):
     return operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format
 
 
-def execute(operation, instruction_type, rs2, rs1, rd, shamt, imm, pc):
+def execute(operation, instruction_type, rs2, rs1, rd, shamt, imm, register_state,temp_register,pc):
     result = -1
     new_pc = 1
     address = -1
     branch_taken = False
+    updated_temp_registers={}
+    for r in temp_register:
+        updated_temp_registers[r] = temp_register[r]
     if instruction_type == "R":
         if operation == "ADD":
-            result = add(rd, rs1, rs2)[0]
+            result_op = add(rd, rs1, rs2,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "SUB":
-            result = sub(rd, rs1, rs2)[0]
+            result_op = sub(rd, rs1, rs2,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "SLL":
-            result = sll(rd, rs1, rs2)[0]
+            result_op = sll(rd, rs1, rs2,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "SLT":
-            result = slt(rd, rs1, rs2)[0]
+            result_op = slt(rd, rs1, rs2,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "SLTU":
-            result = sltu(rd, rs1, rs2)[0]
+            result_op = sltu(rd, rs1, rs2,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "XOR":
-            result = xor(rd, rs1, rs2)[0]
+            result_op = xor(rd, rs1, rs2,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "SRL":
-            result = srl(rd, rs1, rs2)[0]
+            result_op = srl(rd, rs1, rs2,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "SRA":
-            result = sra(rd, rs1, rs2)[0]
+            result_op = sra(rd, rs1, rs2,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "OR":
-            result = or_(rd, rs1, rs2)[0]
+            result_op= or_(rd, rs1, rs2,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "AND":
-            result = and_(rd, rs1, rs2)[0]
+            result_op = and_(rd, rs1, rs2,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
     elif instruction_type == "I":
         if operation == "JALR":
-            result_op = jalr(rd, rs1, imm, pc)
+            result_op = jalr(rd, rs1, imm, pc,temp_register)
             result = result_op[0]
             new_pc = result_op[1]
         elif operation == "LB":
-            address = lb(rd, rs1, imm)[0]
+            address = lb(rd, rs1, imm,temp_register)[0]
         elif operation == "LH":
-            address = lh(rd, rs1, imm)[0]
+            address = lh(rd, rs1, imm,temp_register)[0]
         elif operation == "LW":
-            address = lw(rd, rs1, imm)[0]
+            address = lw(rd, rs1, imm,temp_register)[0]
         elif operation == "LBU":
-            address = lbu(rd, rs1, imm)[0]
+            address = lbu(rd, rs1, imm,temp_register)[0]
         elif operation == "LHU":
-            address = lhu(rd, rs1, imm)[0]
+            address = lhu(rd, rs1, imm,temp_register)[0]
         elif operation == "ADDI":
-            address = addi(rd, rs1, imm)[0]
+            result_op = addi(rd, rs1, imm,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "SLTI":
-            address = slti(rd, rs1, imm)[0]
+            result_op = slti(rd, rs1, imm,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "SLTIU":
-            address = sltiu(rd, rs1, imm)[0]
+            result_op = sltiu(rd, rs1, imm,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "XORI":
-            address = xori(rd, rs1, imm)[0]
+            result_op = xori(rd, rs1, imm,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "ORI":
-            address = ori(rd, rs1, imm)[0]
+            result_op = ori(rd, rs1, imm,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "ANDI":
-            address = andi(rd, rs1, imm)[0]
+            result_op = andi(rd, rs1, imm,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "SLLI":
-            address = slli(rd, rs1, shamt)[0]
+            result_op = slli(rd, rs1, shamt,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "SRLI":
-            address = srli(rd, rs1, shamt)[0]
+            result_op = srli(rd, rs1, shamt,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "SRAI":
-            address = srai(rd, rs1, shamt)[0]
+            result_op = srai(rd, rs1, shamt,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
+        elif operation == "LOADNOC":
+            address = loadnoc(rd,rs1,imm,temp_register)[0]
     elif instruction_type == "S":
         if operation == "SB":
-            result_op = sb(rs1, rs2, imm)
+            result_op = sb(rs1, rs2, imm,temp_register)
             result = result_op[0]
             address = result_op[1]
         elif operation == "SH":
-            result_op = sh(rs1, rs2, imm)
+            result_op = sh(rs1, rs2, imm,temp_register)
             result = result_op[0]
             address = result_op[1]
         elif operation == "SW":
-            result_op = sw(rs1, rs2, imm)
+            result_op = sw(rs1, rs2, imm,temp_register)
             result = result_op[0]
             address = result_op[1]
-        elif operation == "LOADNOC":
-            loadnoc(rs2, rs1, imm)
     elif instruction_type == "SB":
         if operation == "BEQ":
-            result_op = beq(rs1, rs2, imm, pc)
+            result_op = beq(rs1, rs2, imm, pc,temp_register)
             new_pc = result_op[0]
             branch_taken = result_op[1]
         elif operation == "BNE":
-            result_op = bne(rs1, rs2, imm, pc)
+            result_op = bne(rs1, rs2, imm, pc,temp_register)
             new_pc = result_op[0]
             branch_taken = result_op[1]
         elif operation == "BLT":
-            result_op = blt(rs1, rs2, imm, pc)
+            result_op = blt(rs1, rs2, imm, pc,temp_register)
             new_pc = result_op[0]
             branch_taken = result_op[1]
         elif operation == "BGE":
-            result_op = bge(rs1, rs2, imm, pc)
+            result_op = bge(rs1, rs2, imm, pc,temp_register)
             new_pc = result_op[0]
             branch_taken = result_op[1]
         elif operation == "BLTU":
-            result_op = bltu(rs1, rs2, imm, pc)
+            result_op = bltu(rs1, rs2, imm, pc,temp_register)
             new_pc = result_op[0]
             branch_taken = result_op[1]
         elif operation == "BGEU":
-            result_op = bgeu(rs1, rs2, imm, pc)
+            result_op = bgeu(rs1, rs2, imm, pc,temp_register)
             new_pc = result_op[0]
             branch_taken = result_op[1]
     elif instruction_type == "U":
         if operation == "LUI":
-            result = lui(rd, imm)[0]
+            result_op = lui(rd, imm,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
         elif operation == "AUIPC":
-            result = auipc(rd, imm, pc)[0]
-    if operation == "STORENOC":
-        storenoc()
+            result_op = auipc(rd, imm, pc,temp_register)
+            result = result_op[0]
+            updated_temp_registers = result_op[1]
 
-    return result, int(new_pc), address, branch_taken
+    return result, int(new_pc), address, branch_taken,register_state,updated_temp_registers
 
 
-def memory(address, result, rd, instruction_type):
-    if address != -1 and instruction_type == "S":
-        memory_dict[address] = result
-    elif address != -1 and instruction_type == "I":
-        memory_dict[address] = result
-        temp_registers[rd] = result
-        return ("Done")
+def memory(address, result, rd, instruction_type,register_state,temp_registers):
+    global memory_accesses
+    updated_temp_registers={}
+    for r in temp_registers:
+        updated_temp_registers[r] = temp_registers[r]
+    if instruction_type=="N":
+        memory_mapped_reg[3]=1
+        memory_accesses +=1
+        return ["Done",register_state,updated_temp_registers]
+    if address>=16384:
+        value = update(address,address//4)[0]
+        memory_mapped_reg[rd] = value
+        memory_accesses +=1
+        return ["Done",register_state,updated_temp_registers]
     else:
-        return ("NOP")
+        if address != -1 and instruction_type == "S":
+            memory_dict[address] = result
+            memory_accesses += 1
+            update(address,address//4)
+            return ["Done",register_state,updated_temp_registers]
+        elif address != -1 and instruction_type == "I":
+            value = update(address,address//4)
+            result= value
+            updated_temp_registers[rd] = result
+            return ["Done",register_state,updated_temp_registers]
+        else:
+            return ["NOP",register_state,updated_temp_registers]
 
-
-def writeback():
-    for address in temp_registers:
+def writeback(temp_registers):
+    global registers_state
+    for address in registers_state:
         registers_state[address] = temp_registers[address]
-
     return "COMPLETED"
 
 
@@ -245,50 +424,53 @@ def simulate(instructions):
     mid_stall = False
     memory_stall_operations = {}
     I_flag = False
-    while True:
+    while True: 
         print("-"*50+"CLOCK CYCLE: "+str(clock_cycle)+" "+"-"*50)
         if pc >= len(instructions):
             pipeline["F"] = ""
         if pipeline["W"] != "":
-            status, address, instruction_type, rd, i_pc = pipeline["W"]
-            w_status = writeback()
+            status, address, instruction_type,register_state,temp_register,rd, i_pc = pipeline["W"]
+            w_status = writeback(temp_register)
             pipeline["W"] = [w_status, i_pc]
         if pipeline["M"] != "":
-            result, new_pc, address, branch_taken, rd, instruction_type, i_pc = pipeline["M"]
-            if I_flag == True:
-                if address != -1 and instruction_type != "S" and instruction_type != "SB" and rd in in_process:
-                    # print(rd)
-                    in_process.remove(rd)
-                    ready_state.add(rd)
-                if rs1 in in_process or rs2 in in_process:
-                    stall = True
-                else:
-                    stall = False
-            status = memory(address, result, rd, instruction_type)
-            pipeline["M"] = [status, address, instruction_type, rd, i_pc]
+            if pipeline["M"][0]!="STORENOC":
+                result, new_pc, address,branch_taken, rd, instruction_type,register_state,temp_register,i_pc = pipeline["M"]
+                if I_flag == True:
+                    if address != -1 and instruction_type != "S" and instruction_type != "SB" and rd in in_process:
+                        in_process.remove(rd)
+                        ready_state.add(rd)
+                    if rs1 in in_process or rs2 in in_process:
+                        stall = True
+                    else:
+                        stall = False
+                status,register_state,temp_register = memory(address, result, rd, instruction_type,register_state,temp_register)
+                pipeline["M"] = [status, address, instruction_type,register_state,temp_register,rd, i_pc]
+            else:
+                status,register_state,updated_temp_registers = memory(-1, -1, -1, "N",register_state,temp_register)
+                pipeline["M"] = [status, -1, "N",register_state,temp_register,-1,pipeline["M"][-1]]
+
         if pipeline["X"] != "":
-            operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format, i_pc = pipeline[
-                "X"]
-            result, new_pc, address, branch_taken = execute(
-                operation, instruction_type, rs2, rs1, rd, shamt, imm, i_pc)
-            if I_flag == True:
-                if instruction_type != "I" and instruction_type != "S" and instruction_type != "SB" and rs1 not in in_process and rs2 not in in_process:
-                    in_process.remove(rd)
-                    ready_state.add(rd)
-            pc_flag = True
-            if branch_taken == True:
-                dead_branches = (imm//4)-1
-            pipeline["X"] = [result, new_pc, address,
-                             branch_taken, rd, instruction_type, i_pc]
+            operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format, register_state,temp_register,i_pc = pipeline["X"]
+            if operation!="STORENOC":
+                result, new_pc, address, branch_taken,register_state,temp_register= execute(operation, instruction_type, rs2, rs1, rd, shamt, imm, register_state,temp_register,i_pc)
+                if I_flag == True:
+                    if instruction_type != "I" and instruction_type != "S" and instruction_type != "SB" and rs1 not in in_process and rs2 not in in_process:
+                        in_process.remove(rd)
+                        ready_state.add(rd)
+                pc_flag = True
+                if branch_taken == True:
+                    dead_branches = (imm//4)-1
+                pipeline["X"] = [result, new_pc, address,branch_taken, rd, instruction_type,register_state,temp_register,i_pc]
+            else:
+                pipeline["X"] = ["STORENOC",register_state,temp_register,i_pc]
         if pipeline["D"] != "" and stall == False:
             try:
-                operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format = decode(
-                    pipeline["D"][0])
-                i_pc = pipeline["D"][1]
+                operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format = decode(pipeline["D"][0])
+                register_state = pipeline["D"][1]
+                temp_register = pipeline["D"][2]
+                i_pc = pipeline["D"][3]
             except:
-                operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format, i_pc = pipeline[
-                    "D"]
-            print(operation)
+                operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format,register_state,temp_register,i_pc = pipeline["D"]
             if operation in ['LB', 'LH', 'LW', 'LBU', 'LHU']:
                 I_flag = True
             if I_flag == True:
@@ -296,10 +478,9 @@ def simulate(instructions):
                     stall = True
                 if instruction_type != "S" and instruction_type != "SB" and rd not in ready_state and rd != rs2 and rd != rs1:
                     in_process.add(rd)
-            pipeline["D"] = [operation, instruction_type, rs2,
-                             rs1, rd, shamt, imm, readable_format, i_pc]
+            pipeline["D"] = [operation, instruction_type, rs2,rs1, rd, shamt, imm, readable_format,register_state,temp_register,i_pc]
         if pc < len(instructions) and stall == False:
-            pipeline["F"] = [fetch(instructions, pc), pc]
+            pipeline["F"] = [fetch(instructions, pc), registers_state,temp_registers,pc]
             if pc_flag == False:
                 pc += 1
             elif new_pc > pc:
@@ -310,7 +491,7 @@ def simulate(instructions):
             #     stall = True
         keys = list(pipeline.keys())
         clock_cycle += 1
-        # print(pipeline)
+        #print(pipeline)
         for stages in pipeline:
             try:
                 print(stages+": " +
@@ -322,6 +503,7 @@ def simulate(instructions):
         print(ready_state)
         print("\n")
         print(registers_state)
+        print(memory_mapped_reg)
         print("\n")
         # Shift values to the next key
         if stall == False:
@@ -347,11 +529,11 @@ def simulate(instructions):
                         break
             dead_branches = 0
 
-
 def main():
-    file_path = "/Users/manavsaini/Documents/Assembler Simulator/output.bin"
+    file_path = input()
     instructions = read_binary_file(file_path)
     simulate(instructions)
-
-
+    print("TOTAL MISSES",misses)
+    print("TOTAL HITS",hits)
+    print("TOTAL MEMORY ACCESSES",memory_accesses+misses)
 main()

@@ -96,3 +96,7 @@ for i, (num1, num2) in enumerate(zip(binary_numbers1, binary_numbers2)):
         print(f"Element {i}: Equal")
     else:
         print(f"Element {i}: Not Equal")
+
+
+
+
