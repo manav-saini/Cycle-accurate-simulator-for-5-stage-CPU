@@ -508,10 +508,10 @@ def simulate(instructions):
                     file1.write(stages+":  \n")
             # file1.write("\n")
             file1.write("Registers in process: "+ str(in_process)+"\n")
-            file1.write(str(ready_state)+"\n")
-            file1.write(str(registers_state)+"\n")
-            file1.write(str(memory_mapped_reg)+"\n")
-            file1.write(str(memory_dict)+"\n")
+            file1.write("Ready State: "+ str(ready_state)+"\n")
+            file1.write("Registers State: "+ str(registers_state)+"\n")
+            file1.write("Memory Mapped Registers: "+ str(memory_mapped_reg)+"\n")
+            file1.write("Memory: "+ str(memory_dict)+"\n")
             # Shift values to the next key
             if stall == False:
                 for i in range(len(keys) - 1, 0, -1):
