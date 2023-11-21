@@ -32,6 +32,7 @@ def simulate():
                         if pipeline[IF]["instruction"] and get_memory_address(pipeline[IF]["instruction"]) == ex_mem_read_address:
                             # Data hazard detected, stall the pipeline
                             stall = True
+                            print("stalling")
                             pc -= 1  # Revert PC to fetch the instruction again
 
             # Update the pipeline stages
@@ -81,6 +82,7 @@ def simulate():
             log_file.write("Memory: " + str(clock_cycle_log["memory"]) + "\n")
             log_file.write("Cache: " + str(clock_cycle_log["cache"]) + "\n")
             log_file.write("-" * 50 + "\n")
+            print(pipeline)
             print("pc ", pc)
 
     # Print cache statistics
@@ -101,13 +103,13 @@ def execute_instruction(binary_instruction):
     global registers
     global memory
     global pc
-    print("execute_instruction: ", binary_instruction)
+    # print("execute_instruction: ", binary_instruction)
     opcode = binary_instruction[25:32]
     funct3 = binary_instruction[17:20]
     funct7 = binary_instruction[0:7]
     
-    print("execute_instruction opcode: ", opcode)
-    print("execute_instruction funct3: ", funct3)
+    # print("execute_instruction opcode: ", opcode)
+    # print("execute_instruction funct3: ", funct3)
 
     if opcode in opcode_to_instruction:
         # print(opcode)
