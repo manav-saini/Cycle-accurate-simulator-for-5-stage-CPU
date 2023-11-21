@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from collections import Counter
+import numpy as np
 
 log_file = "./simulation.log"
 
@@ -62,10 +64,9 @@ def read_data_memory_access(lines, total_cycles):
     
     return total_data_memory_access, clock_cycle
 
-def read_type_of_instruction(lines, total_cycles):
+def read_type_of_instruction(lines, total_cycles, total_type_of_instructions):
     type_of_instruction = []
     clock_cycle = []
-    total_type_of_instruction = []
 
     for line in lines:
         if "CLOCK CYCLE: " in line:
@@ -76,15 +77,24 @@ def read_type_of_instruction(lines, total_cycles):
                 inst_type = index[6]
                 type_of_instruction.append(inst_type)
                 clock_cycle.append(cycle)
-    
-    for i in range(0, total_cycles + 1):
-        if i in clock_cycle:
-            index = clock_cycle.index(i)
-            total_type_of_instruction.append(type_of_instruction[index])
-        else:
-            total_type_of_instruction.append(0)
-    
-    return total_type_of_instruction, clock_cycle
+
+    # Generate frequency count for each type of instruction
+    instruction_frequency = dict(Counter(type_of_instruction))
+
+    # Fill zero for instructions with no occurrences
+    for inst in total_type_of_instructions:
+        if inst not in instruction_frequency:
+            instruction_frequency[inst] = 0
+
+    # Prepare data for line plot
+    type_of_instructions = list(instruction_frequency.keys())
+    frequencies = [instruction_frequency[inst] for inst in total_type_of_instructions]
+
+    dict_list = {}
+    for i in range(len(type_of_instructions)):
+        dict_list[type_of_instructions[i]] = frequencies[i]
+
+    return type_of_instructions, frequencies, clock_cycle, dict_list
 
 def read_data_stalls(lines, total_cycles):
     check_f, check_stall, check_w = False, False, False
@@ -154,6 +164,20 @@ def read_hit_and_miss(lines, total_cycles):
     
     return total_hits, total_misses, clock_cycle
 
+def read_reg_and_mem_instructions(frequency):
+    register_instructions = 0
+    memory_instructions = 0
+
+    for key, value in frequency.items():
+        if key == 'R' or key == 'SB' or key == 'U' or key == 'UJ':
+            register_instructions += value
+        else:
+            memory_instructions += value
+    
+    total = register_instructions + memory_instructions
+
+    return register_instructions, memory_instructions, total
+
 def calculate_total_cycles(lines):
     total = 0
     for line in lines:
@@ -162,11 +186,15 @@ def calculate_total_cycles(lines):
     return total
 
 total_cycles = calculate_total_cycles(lines)
+
+total_type_of_instructions = ['R', 'I', 'S', 'SB', 'U', 'UJ']
+
 total_instruction_memory_access, clock_cycle = read_instruction_memory_access(lines, total_cycles)
 total_data_memory_access, clock_cycle2 = read_data_memory_access(lines, total_cycles)
-total_type_of_instruction, clock_cycle3 = read_type_of_instruction(lines, total_cycles)
+type_of_instructions, instruction_frequency, clock_cycle3, dict_list = read_type_of_instruction(lines, total_cycles, total_type_of_instructions)
 total_data_stalls, clock_cycle4 = read_data_stalls(lines, total_cycles)
 total_hits, total_misses, clock_cycle5 = read_hit_and_miss(lines, total_cycles)
+register_instruction, memory_instruction, total_count_of_frequency = read_reg_and_mem_instructions(dict_list)
 
 print("Total Cycles: ", total_cycles)
 
@@ -174,6 +202,7 @@ print("Total Cycles: ", total_cycles)
 # # PLOTTING #
 # ############
 
+print("-"*20)
 print("Instruction Memory Access Plot")
 print("Instruction Memory Access List: ")
 print(total_instruction_memory_access)
@@ -204,22 +233,23 @@ ax2.grid(True)
 plt.tight_layout()
 plt.show()
 
+print("-"*20)
 print("Type of Instructions Plot")
-print("Instruction Memory Access List: ")
-print(total_type_of_instruction)
+print("Type of Instruction List: ")
+print(type_of_instructions)
 print("Clock Cycles: ")
 print(clock_cycle3)
-# Type of Instructions Plot
+# Type of Instructions Line Plot
 plt.figure(figsize=(10, 6))
-plt.hist(total_type_of_instruction, bins=len(set(total_type_of_instruction)), color='orange')
+plt.plot(type_of_instructions, instruction_frequency, marker='o', linestyle='-', color='orange')
 plt.xlabel('Type of Instructions')
 plt.ylabel('Frequency')
-plt.title('Type of Instructions Plot')
+plt.title('Type of Instructions Line Plot')
 plt.xticks(rotation=45)
 plt.grid(axis='y')
 plt.show()
 
-
+print("-"*20)
 print("Data Stalling Plot")
 print("Data Stall List: ")
 print(total_data_stalls)
@@ -234,6 +264,7 @@ plt.title('Data Stalling Plot')
 plt.grid(True)
 plt.show()
 
+print("-"*20)
 print("Hit and Miss Plot")
 print("Hit List: ")
 print(total_hits)
@@ -250,4 +281,26 @@ plt.ylabel('Hits/Misses')
 plt.title('Hit and Miss Plot')
 plt.legend()
 plt.grid(True)
+plt.show()
+
+print("-"*20)
+print("Register and Memory Instructions Plot")
+print("Register Instructions: ")
+print(register_instruction)
+print("Memory Instructions: ")
+print(memory_instruction)
+print("Total Instructions: ")
+print(total_count_of_frequency)
+# Register and Memory Instructions Plot
+# Combine the register_instruction and memory_instruction data into a list
+data = [register_instruction, memory_instruction]
+# Labels for x-axis
+labels = ['Register Instructions', 'Memory Instructions']
+# Bar plot
+plt.figure(figsize=(10, 6))
+plt.bar(labels, data, color=['blue', 'red'])
+plt.xlabel('Instruction Types')
+plt.ylabel('Frequency')
+plt.title('Register and Memory Instructions Bar Plot')
+plt.grid(axis='y')
 plt.show()
