@@ -1,1 +1,1 @@
-print
+instruction[32-31-1]*20 + 

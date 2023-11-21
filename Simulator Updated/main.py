@@ -197,15 +197,14 @@ def decode(instruction):
             rd = registers[instruction[32-11-1:32-7]]
             readable_format = f"{operation} {rd} {rs1} {imm}"
     elif instruction_type == "S":
-        imm = signed_binary_to_decimal(
-            instruction[32-31-1]*20 + instruction[32-31-1:32-25] + instruction[32-11-1:32-7])
+        # imm = signed_binary_to_decimal(instruction[32-31-1]*20 + instruction[32-31-1:32-25] + instruction[32-11-1:32-7])
+        imm = signed_binary_to_decimal(instruction[32-31-1:32-25] + instruction[32-11-1:32-7])
         rs2 = registers[instruction[32-24-1:32-20]]
         rs1 = registers[instruction[32-19-1:32-15]]
         readable_format = f"{operation} {rs1} {rs2} {imm}"
     elif instruction_type == "SB":
         # imm = signed_binary_to_decimal(instruction[32-31-1]*19 + instruction[32-31-1] + instruction[32-7-1] + instruction[32-30-1:32-25] + instruction[32-11-1:32-8] + "0")
-        imm = signed_binary_to_decimal(
-            instruction[32-31-1] + instruction[32-7-1] + instruction[32-30-1:32-25] + instruction[32-11-1:32-8])
+        imm = signed_binary_to_decimal(instruction[32-31-1] + instruction[32-7-1] + instruction[32-30-1:32-25] + instruction[32-11-1:32-8])
         rs2 = registers[instruction[32-24-1:32-20]]
         rs1 = registers[instruction[32-19-1:32-15]]
         readable_format = f"{operation} {rs1} {rs2} {imm}"
@@ -214,8 +213,8 @@ def decode(instruction):
         rd = registers[instruction[32-11-1:32-7]]
         readable_format = f"{operation} {rd} {imm}"
     elif instruction_type == "UJ":
-        imm = signed_binary_to_decimal(instruction[32-31-1]*11+instruction[32-31-1] +
-                                       instruction[32-19-1:32-12] + instruction[32-20-1] + instruction[32-30-1:32-21] + "0")
+        # imm = signed_binary_to_decimal(instruction[32-31-1]*11+instruction[32-31-1] +instruction[32-19-1:32-12] + instruction[32-20-1] + instruction[32-30-1:32-21] + "0")
+        imm = signed_binary_to_decimal(instruction[32-31-1] +instruction[32-19-1:32-12] + instruction[32-20-1] + instruction[32-30-1:32-21])
         rd = registers[instruction[32-11-1:32-7]]
         readable_format = f"{operation} {rd} {imm}"
 
@@ -499,7 +498,10 @@ def simulate(instructions):
                     elif stages=="D":
                         file1.write("D: "+str(pipeline["D"][-1])+" "+str(pipeline["D"][7])+" \n")
                     elif stages=="X":
-                        file1.write("X: "+str(pipeline["X"][-1])+" "+str(pipeline["X"][0])+" \n")
+                        if pipeline["X"][0]!="STORENOC":
+                            file1.write("X: "+str(pipeline["X"][-1])+" Result: "+str(pipeline["X"][0])+" Instruction Type: "+str(pipeline["X"][5])+" \n")
+                        else:
+                            file1.write("X: STORENOC \n")
                     elif stages=="M":
                         file1.write("M: "+str(pipeline["M"][-1])+" "+" "+str(pipeline["M"][0])+" \n")
                     elif stages=="W":
