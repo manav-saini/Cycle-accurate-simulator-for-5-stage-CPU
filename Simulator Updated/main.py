@@ -503,7 +503,7 @@ def simulate(instructions):
                         else:
                             file1.write("X: STORENOC \n")
                     elif stages=="M":
-                        file1.write("M: "+str(pipeline["M"][-1])+" "+" "+str(pipeline["M"][0])+" \n")
+                        file1.write("M: "+str(pipeline["M"][-1])+" "+str(pipeline["M"][0])+" \n")
                     elif stages=="W":
                         file1.write("W: "+str(pipeline["W"][-1])+" "+str(pipeline["W"][-1])+" \n")
                 else:
