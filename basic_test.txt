@@ -1,0 +1,5 @@
+SUB t1 sp ra
+ADDI s9 s10 23
+ADDI s9 s10 23
+ADDI s9 s10 23
+ADDI s9 s9 23

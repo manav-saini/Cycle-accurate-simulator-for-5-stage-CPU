@@ -359,7 +359,7 @@ def execute_instruction(binary_instruction):
             rs1 = registers_mapping.get(binary_instruction[12:17])
             imm = int(binary_instruction[0:12], 2)
             # print("STORENOC: ", rs1, rs2, imm)
-            registers, memory, pc = sendnoc(rs1, rs2, imm, registers, memory, pc)
+            registers, memory, pc = sendnoc(registers, memory, pc)
         else:
             raise ValueError(f"Unsupported operation {operation}")
     return registers, memory, pc
@@ -544,7 +544,7 @@ registers = {
 }
 
 # Initializing memory with initial values
-memory = [0] * 1024  # Initialize your memory with an appropriate size
+memory = [5] * 1024  # Initialize your memory with an appropriate size
 
 # Initializing cache with initial values (if applicable)
 cache = {}

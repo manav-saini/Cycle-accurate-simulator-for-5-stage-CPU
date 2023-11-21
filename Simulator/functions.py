@@ -208,9 +208,9 @@ def sw(rs1, rs2, imm, registers, memory, pc):
     # print("sw")
     address = registers[rs1] + imm
     memory[address] = registers[rs2] & 0xFF
-    memory[address + 1] = (registers[rs2] >> 8) & 0xFF
-    memory[address + 2] = (registers[rs2] >> 16) & 0xFF
-    memory[address + 3] = (registers[rs2] >> 24)
+    # memory[address + 1] = (registers[rs2] >> 8) & 0xFF
+    # memory[address + 2] = (registers[rs2] >> 16) & 0xFF
+    # memory[address + 3] = (registers[rs2] >> 24)
     # print(memory[address])
     return registers, memory, pc
 
@@ -240,7 +240,7 @@ def sltiu(rd, rs1, imm, registers, memory, pc):
     Logic: rd ← (rs1 < imm i) ? 1 : 0, pc ← pc+4
     """
     # print("sltiu")
-    registers[rd] = 1 if registers[rs1] < imm else 0
+    registers[rd] = 1 if (registers[rs1] & 0xFFFFFFFF) < (imm & 0xFFFFFFFF) else 0
     # print("function: ",registers[rd])
     return registers, memory, pc
 
@@ -424,5 +424,5 @@ def sendnoc(registers, memory, pc):
     """
     # print("sendnoc")
     # Hardcode the value 1 to MMR4 (address 0x4010)
-    memory[0x4010] = 1
+    memory[1023] = 1
     return registers, memory, pc
