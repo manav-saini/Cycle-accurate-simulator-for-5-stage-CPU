@@ -374,16 +374,16 @@ def execute(operation, instruction_type, rs2, rs1, rd, shamt, imm, register_stat
     return result, int(new_pc), address, branch_taken,register_state,updated_temp_registers
 
 
-def memory(address, result, rd, instruction_type,register_state,temp_registers):
+def memory(address, result, rd, instruction_type,register_state,temp_register):
     global memory_accesses
     updated_temp_registers={}
-    for r in temp_registers:
-        updated_temp_registers[r] = temp_registers[r]
+    for r in temp_register:
+        updated_temp_registers[r] = temp_register[r]
     if instruction_type=="N":
         memory_mapped_reg[3]=1
         memory_accesses +=1
         return ["Done",register_state,updated_temp_registers]
-    if address>=16384:
+    if address>=4096:
         value = update(address,address//4)[0]
         memory_mapped_reg[rd] = value
         memory_accesses +=1
@@ -396,6 +396,7 @@ def memory(address, result, rd, instruction_type,register_state,temp_registers):
             return ["Done",register_state,updated_temp_registers]
         elif address != -1 and instruction_type == "I":
             value = update(address,address//4)[0]
+            print(sets)
             result= value
             updated_temp_registers[rd] = result
             memory_accesses +=1
@@ -403,10 +404,15 @@ def memory(address, result, rd, instruction_type,register_state,temp_registers):
         else:
             return ["NOP",register_state,updated_temp_registers]
 
-def writeback(temp_registers):
+def writeback(temp_register):
     global registers_state
+    # global temp_registers
+    # for add in temp_register:
+    #     temp_registers[add] = temp_register[add]
     for address in registers_state:
-        registers_state[address] = temp_registers[address]
+        registers_state[address] = temp_register[address]
+    # for r in temp_register:
+    #     temp_registers[r] = temp_register[r]
     return "COMPLETED"
 
 
@@ -424,16 +430,20 @@ def simulate(instructions):
     I_flag = False
     with open("simulation.log", "w") as file1:
         while True: 
+            global registers_state
+            global temp_registers
             file1.write("-"*50+"CLOCK CYCLE: "+str(clock_cycle)+" "+"-"*50+"\n")
             if pc >= len(instructions):
                 pipeline["F"] = ""
             if pipeline["W"] != "":
-                status, address, instruction_type,register_state,temp_register,rd, i_pc = pipeline["W"]
-                w_status = writeback(temp_register)
+                # status, address, instruction_type,register_state,temp_register,rd, i_pc = pipeline["W"]
+                status, address, instruction_type,rd, i_pc = pipeline["W"]
+                w_status = writeback(temp_registers)
                 pipeline["W"] = [w_status, i_pc]
             if pipeline["M"] != "":
                 if pipeline["M"][0]!="STORENOC":
-                    result, new_pc, address,branch_taken, rd, instruction_type,register_state,temp_register,i_pc = pipeline["M"]
+                    # result, new_pc, address,branch_taken, rd, instruction_type,register_state,temp_register,i_pc = pipeline["M"]
+                    result, new_pc, address,branch_taken, rd, instruction_type,i_pc = pipeline["M"]
                     if I_flag == True:
                         if address != -1 and instruction_type != "S" and instruction_type != "SB" and rd in in_process:
                             in_process.remove(rd)
@@ -442,16 +452,29 @@ def simulate(instructions):
                             stall = True
                         else:
                             stall = False
-                    status,register_state,temp_register = memory(address, result, rd, instruction_type,register_state,temp_register)
-                    pipeline["M"] = [status, address, instruction_type,register_state,temp_register,rd, i_pc]
+                    status,register_state,temp_register = memory(address, result, rd, instruction_type,registers_state,temp_registers)
+                    # for r in registers_state:
+                    #     registers_state[r] = register_state[r]
+                    for r in temp_registers:
+                        temp_registers[r] = temp_register[r]
+                    # pipeline["M"] = [status, address, instruction_type,register_state,temp_register,rd, i_pc]
+                    pipeline["M"] = [status, address, instruction_type,rd, i_pc]
                 else:
-                    status,register_state,temp_register = memory(-1, -1, -1, "N",register_state,temp_register)
-                    pipeline["M"] = [status, -1, "N",register_state,temp_register,-1,pipeline["M"][-1]]
+                    status,register_state,temp_register = memory(-1, -1, -1, "N",registers_state,temp_registers)
+                    for r in temp_registers:
+                        temp_registers[r] = temp_register[r]
+                    # pipeline["M"] = [status, -1, "N",register_state,temp_register,-1,pipeline["M"][-1]]
+                    pipeline["M"] = [status, -1, "N",-1,pipeline["M"][-1]]
 
             if pipeline["X"] != "":
-                operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format, register_state,temp_register,i_pc = pipeline["X"]
+                operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format,i_pc = pipeline["X"]
                 if operation!="STORENOC":
-                    result, new_pc, address, branch_taken,register_state,temp_register= execute(operation, instruction_type, rs2, rs1, rd, shamt, imm, register_state,temp_register,i_pc)
+                    # result, new_pc, address, branch_taken,register_state,temp_register= execute(operation, instruction_type, rs2, rs1, rd, shamt, imm, register_state,temp_register,i_pc)
+                    result, new_pc, address, branch_taken,register_state,temp_register= execute(operation, instruction_type, rs2, rs1, rd, shamt, imm, registers_state,temp_registers,i_pc)
+                    # for r in registers_state:
+                    #     registers_state[r] = register_state[r]
+                    for r in temp_register:
+                        temp_registers[r] = temp_register[r]
                     if I_flag == True:
                         if instruction_type != "I" and instruction_type != "S" and instruction_type != "SB" and rs1 not in in_process and rs2 not in in_process:
                             in_process.remove(rd)
@@ -459,17 +482,19 @@ def simulate(instructions):
                     pc_flag = True
                     if branch_taken == True:
                         dead_branches = (imm//4)-1
-                    pipeline["X"] = [result, new_pc, address,branch_taken, rd, instruction_type,register_state,temp_register,i_pc]
+                    # pipeline["X"] = [result, new_pc, address,branch_taken, rd, instruction_type,register_state,temp_register,i_pc]
+                    pipeline["X"] = [result, new_pc, address,branch_taken, rd, instruction_type,i_pc]
                 else:
                     pipeline["X"] = ["STORENOC",register_state,temp_register,i_pc]
             if pipeline["D"] != "" and stall == False:
                 try:
                     operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format = decode(pipeline["D"][0])
-                    register_state = pipeline["D"][1]
-                    temp_register = pipeline["D"][2]
-                    i_pc = pipeline["D"][3]
+                    # register_state = pipeline["D"][1]
+                    # temp_register = pipeline["D"][2]
+                    i_pc = pipeline["D"][1]
                 except:
-                    operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format,register_state,temp_register,i_pc = pipeline["D"]
+                    # operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format,register_state,temp_register,i_pc = pipeline["D"]
+                    operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format,i_pc = pipeline["D"]
                 if operation in ['LB', 'LH', 'LW', 'LBU', 'LHU']:
                     I_flag = True
                 if I_flag == True:
@@ -477,9 +502,12 @@ def simulate(instructions):
                         stall = True
                     if instruction_type != "S" and instruction_type != "SB" and rd not in ready_state and rd != rs2 and rd != rs1:
                         in_process.add(rd)
-                pipeline["D"] = [operation, instruction_type, rs2,rs1, rd, shamt, imm, readable_format,register_state,temp_register,i_pc]
+                # pipeline["D"] = [operation, instruction_type, rs2,rs1, rd, shamt, imm, readable_format,register_state,temp_register,i_pc]
+                pipeline["D"] = [operation, instruction_type, rs2,rs1, rd, shamt, imm, readable_format,i_pc]
+
             if pc < len(instructions) and stall == False:
-                pipeline["F"] = [fetch(instructions, pc), registers_state,temp_registers,pc]
+                # pipeline["F"] = [fetch(instructions, pc), registers_state,temp_registers,pc]
+                pipeline["F"] = [fetch(instructions, pc),pc]
                 if pc_flag == False:
                     pc += 1
                 elif new_pc > pc:
@@ -505,15 +533,19 @@ def simulate(instructions):
                     elif stages=="M":
                         file1.write("M: "+str(pipeline["M"][-1])+" "+str(pipeline["M"][0])+" \n")
                     elif stages=="W":
-                        file1.write("W: "+str(pipeline["W"][-1])+" "+str(pipeline["W"][-1])+" \n")
+                        file1.write("W: "+str(pipeline["W"][-1])+" "+str(pipeline["W"][0])+" \n")
                 else:
                     file1.write(stages+":  \n")
             # file1.write("\n")
             file1.write("Registers in process: "+ str(in_process)+"\n")
-            file1.write("Ready State: "+ str(ready_state)+"\n")
-            file1.write("Registers State: "+ str(registers_state)+"\n")
-            file1.write("Memory Mapped Registers: "+ str(memory_mapped_reg)+"\n")
-            file1.write("Memory: "+ str(memory_dict)+"\n")
+            file1.write("Registers in ready state: "+ str(ready_state)+"\n")
+            file1.write("Registers Sate \n"+str(registers_state)+"\n")
+            file1.write("Memory Mapped Registers: \n"+str(memory_mapped_reg)+"\n")
+            file1.write("Memory State\n"+str(memory_dict)+"\n")
+            file1.write("Cache: \n")
+            file1.write(str(sets)+"\n")
+            file1.write("Hits: "+str(hits)+" Misses: "+str(misses)+"\n")
+            file1.write("Memory Accesses: "+str(memory_accesses)+"\n")
             # Shift values to the next key
             if stall == False:
                 for i in range(len(keys) - 1, 0, -1):
