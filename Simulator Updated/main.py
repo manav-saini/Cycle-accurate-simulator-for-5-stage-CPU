@@ -537,15 +537,15 @@ def simulate(instructions):
                 else:
                     file1.write(stages+":  \n")
             # file1.write("\n")
-            file1.write("Registers in process: "+ str(in_process)+"\n")
-            file1.write("Registers in ready state: "+ str(ready_state)+"\n")
-            file1.write("Registers Sate \n"+str(registers_state)+"\n")
-            file1.write("Memory Mapped Registers: \n"+str(memory_mapped_reg)+"\n")
-            file1.write("Memory State\n"+str(memory_dict)+"\n")
+            file1.write("Registers in process: "+ str(in_process)+" \n")
+            file1.write("Registers in ready state: "+ str(ready_state)+" \n")
+            file1.write("Registers Sate \n"+str(registers_state)+" \n")
+            file1.write("Memory Mapped Registers: \n"+str(memory_mapped_reg)+" \n")
+            file1.write("Memory State\n"+str(memory_dict)+" \n")
             file1.write("Cache: \n")
-            file1.write(str(sets)+"\n")
-            file1.write("Hits: "+str(hits)+" Misses: "+str(misses)+"\n")
-            file1.write("Memory Accesses: "+str(memory_accesses)+"\n")
+            file1.write(str(sets)+" \n")
+            file1.write("Hits: "+str(hits)+" Misses: "+str(misses)+" \n")
+            file1.write("Memory Accesses: "+str(memory_accesses)+" \n")
             # Shift values to the next key
             if stall == False:
                 for i in range(len(keys) - 1, 0, -1):
