@@ -131,9 +131,7 @@ def read_binary_file(file_path):
         instructions = []
         for i in range(num_instructions):
             # Extract 4 bytes (32 bits) for each instruction
-            instruction_bytes = binary_data[i *
-                                            instruction_size: (i + 1) * instruction_size]
-
+            instruction_bytes = binary_data[i *instruction_size: (i + 1) * instruction_size]
             # Convert the bytes to an integer and then to a binary string
             instruction_int = int.from_bytes(
                 instruction_bytes, byteorder='big')
@@ -398,9 +396,10 @@ def memory(address, result, rd, instruction_type,register_state,temp_registers):
             update(address,address//4)
             return ["Done",register_state,updated_temp_registers]
         elif address != -1 and instruction_type == "I":
-            value = update(address,address//4)
+            value = update(address,address//4)[0]
             result= value
             updated_temp_registers[rd] = result
+            memory_accesses +=1
             return ["Done",register_state,updated_temp_registers]
         else:
             return ["NOP",register_state,updated_temp_registers]
@@ -424,110 +423,118 @@ def simulate(instructions):
     mid_stall = False
     memory_stall_operations = {}
     I_flag = False
-    while True: 
-        print("-"*50+"CLOCK CYCLE: "+str(clock_cycle)+" "+"-"*50)
-        if pc >= len(instructions):
-            pipeline["F"] = ""
-        if pipeline["W"] != "":
-            status, address, instruction_type,register_state,temp_register,rd, i_pc = pipeline["W"]
-            w_status = writeback(temp_register)
-            pipeline["W"] = [w_status, i_pc]
-        if pipeline["M"] != "":
-            if pipeline["M"][0]!="STORENOC":
-                result, new_pc, address,branch_taken, rd, instruction_type,register_state,temp_register,i_pc = pipeline["M"]
-                if I_flag == True:
-                    if address != -1 and instruction_type != "S" and instruction_type != "SB" and rd in in_process:
-                        in_process.remove(rd)
-                        ready_state.add(rd)
-                    if rs1 in in_process or rs2 in in_process:
-                        stall = True
-                    else:
-                        stall = False
-                status,register_state,temp_register = memory(address, result, rd, instruction_type,register_state,temp_register)
-                pipeline["M"] = [status, address, instruction_type,register_state,temp_register,rd, i_pc]
-            else:
-                status,register_state,updated_temp_registers = memory(-1, -1, -1, "N",register_state,temp_register)
-                pipeline["M"] = [status, -1, "N",register_state,temp_register,-1,pipeline["M"][-1]]
+    with open("simulation.log", "w") as file1:
+        while True: 
+            file1.write("-"*50+"CLOCK CYCLE: "+str(clock_cycle)+" "+"-"*50+"\n")
+            if pc >= len(instructions):
+                pipeline["F"] = ""
+            if pipeline["W"] != "":
+                status, address, instruction_type,register_state,temp_register,rd, i_pc = pipeline["W"]
+                w_status = writeback(temp_register)
+                pipeline["W"] = [w_status, i_pc]
+            if pipeline["M"] != "":
+                if pipeline["M"][0]!="STORENOC":
+                    result, new_pc, address,branch_taken, rd, instruction_type,register_state,temp_register,i_pc = pipeline["M"]
+                    if I_flag == True:
+                        if address != -1 and instruction_type != "S" and instruction_type != "SB" and rd in in_process:
+                            in_process.remove(rd)
+                            ready_state.add(rd)
+                        if rs1 in in_process or rs2 in in_process:
+                            stall = True
+                        else:
+                            stall = False
+                    status,register_state,temp_register = memory(address, result, rd, instruction_type,register_state,temp_register)
+                    pipeline["M"] = [status, address, instruction_type,register_state,temp_register,rd, i_pc]
+                else:
+                    status,register_state,temp_register = memory(-1, -1, -1, "N",register_state,temp_register)
+                    pipeline["M"] = [status, -1, "N",register_state,temp_register,-1,pipeline["M"][-1]]
 
-        if pipeline["X"] != "":
-            operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format, register_state,temp_register,i_pc = pipeline["X"]
-            if operation!="STORENOC":
-                result, new_pc, address, branch_taken,register_state,temp_register= execute(operation, instruction_type, rs2, rs1, rd, shamt, imm, register_state,temp_register,i_pc)
+            if pipeline["X"] != "":
+                operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format, register_state,temp_register,i_pc = pipeline["X"]
+                if operation!="STORENOC":
+                    result, new_pc, address, branch_taken,register_state,temp_register= execute(operation, instruction_type, rs2, rs1, rd, shamt, imm, register_state,temp_register,i_pc)
+                    if I_flag == True:
+                        if instruction_type != "I" and instruction_type != "S" and instruction_type != "SB" and rs1 not in in_process and rs2 not in in_process:
+                            in_process.remove(rd)
+                            ready_state.add(rd)
+                    pc_flag = True
+                    if branch_taken == True:
+                        dead_branches = (imm//4)-1
+                    pipeline["X"] = [result, new_pc, address,branch_taken, rd, instruction_type,register_state,temp_register,i_pc]
+                else:
+                    pipeline["X"] = ["STORENOC",register_state,temp_register,i_pc]
+            if pipeline["D"] != "" and stall == False:
+                try:
+                    operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format = decode(pipeline["D"][0])
+                    register_state = pipeline["D"][1]
+                    temp_register = pipeline["D"][2]
+                    i_pc = pipeline["D"][3]
+                except:
+                    operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format,register_state,temp_register,i_pc = pipeline["D"]
+                if operation in ['LB', 'LH', 'LW', 'LBU', 'LHU']:
+                    I_flag = True
                 if I_flag == True:
-                    if instruction_type != "I" and instruction_type != "S" and instruction_type != "SB" and rs1 not in in_process and rs2 not in in_process:
-                        in_process.remove(rd)
-                        ready_state.add(rd)
-                pc_flag = True
-                if branch_taken == True:
-                    dead_branches = (imm//4)-1
-                pipeline["X"] = [result, new_pc, address,branch_taken, rd, instruction_type,register_state,temp_register,i_pc]
+                    if rs2 in in_process or rs1 in in_process:
+                        stall = True
+                    if instruction_type != "S" and instruction_type != "SB" and rd not in ready_state and rd != rs2 and rd != rs1:
+                        in_process.add(rd)
+                pipeline["D"] = [operation, instruction_type, rs2,rs1, rd, shamt, imm, readable_format,register_state,temp_register,i_pc]
+            if pc < len(instructions) and stall == False:
+                pipeline["F"] = [fetch(instructions, pc), registers_state,temp_registers,pc]
+                if pc_flag == False:
+                    pc += 1
+                elif new_pc > pc:
+                    pc = new_pc
+                else:
+                    pc += 1
+                # if mid_stall==True:
+                #     stall = True
+            keys = list(pipeline.keys())
+            clock_cycle += 1
+            #print(pipeline)
+            for stages in pipeline:
+                if pipeline[stages] != "":
+                    if stages=="F":
+                        file1.write("F: "+str(pipeline["F"][-1])+" "+str(pipeline["F"][0])+" \n")
+                    elif stages=="D":
+                        file1.write("D: "+str(pipeline["D"][-1])+" "+str(pipeline["D"][7])+" \n")
+                    elif stages=="X":
+                        file1.write("X: "+str(pipeline["X"][-1])+" "+str(pipeline["X"][0])+" \n")
+                    elif stages=="M":
+                        file1.write("M: "+str(pipeline["M"][-1])+" "+" "+str(pipeline["M"][0])+" \n")
+                    elif stages=="W":
+                        file1.write("W: "+str(pipeline["W"][-1])+" "+str(pipeline["W"][-1])+" \n")
+                else:
+                    file1.write(stages+":  \n")
+            # file1.write("\n")
+            file1.write("Registers in process: "+ str(in_process)+"\n")
+            file1.write(str(ready_state)+"\n")
+            file1.write(str(registers_state)+"\n")
+            file1.write(str(memory_mapped_reg)+"\n")
+            file1.write(str(memory_dict)+"\n")
+            # Shift values to the next key
+            if stall == False:
+                for i in range(len(keys) - 1, 0, -1):
+                    pipeline[keys[i]] = pipeline[keys[i - 1]]
             else:
-                pipeline["X"] = ["STORENOC",register_state,temp_register,i_pc]
-        if pipeline["D"] != "" and stall == False:
-            try:
-                operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format = decode(pipeline["D"][0])
-                register_state = pipeline["D"][1]
-                temp_register = pipeline["D"][2]
-                i_pc = pipeline["D"][3]
-            except:
-                operation, instruction_type, rs2, rs1, rd, shamt, imm, readable_format,register_state,temp_register,i_pc = pipeline["D"]
-            if operation in ['LB', 'LH', 'LW', 'LBU', 'LHU']:
-                I_flag = True
-            if I_flag == True:
-                if rs2 in in_process or rs1 in in_process:
-                    stall = True
-                if instruction_type != "S" and instruction_type != "SB" and rd not in ready_state and rd != rs2 and rd != rs1:
-                    in_process.add(rd)
-            pipeline["D"] = [operation, instruction_type, rs2,rs1, rd, shamt, imm, readable_format,register_state,temp_register,i_pc]
-        if pc < len(instructions) and stall == False:
-            pipeline["F"] = [fetch(instructions, pc), registers_state,temp_registers,pc]
-            if pc_flag == False:
-                pc += 1
-            elif new_pc > pc:
-                pc = new_pc
-            else:
-                pc += 1
-            # if mid_stall==True:
-            #     stall = True
-        keys = list(pipeline.keys())
-        clock_cycle += 1
-        #print(pipeline)
-        for stages in pipeline:
-            try:
-                print(stages+": " +
-                      str(pipeline[stages][len(pipeline[stages])-1]))
-            except:
-                print(stages+": ")
-        print("\n")
-        print(in_process)
-        print(ready_state)
-        print("\n")
-        print(registers_state)
-        print(memory_mapped_reg)
-        print("\n")
-        # Shift values to the next key
-        if stall == False:
-            for i in range(len(keys) - 1, 0, -1):
-                pipeline[keys[i]] = pipeline[keys[i - 1]]
-        else:
-            for i in range(len(keys) - 1, 2, -1):
-                pipeline[keys[i]] = pipeline[keys[i - 1]]
-            pipeline["X"] = ""
-        all_empty = all(value == "" for value in pipeline.values())
-        if all_empty:
-            break
-        if branch_taken == True:
-            branch_taken = False
-            removed_c = 0
-            if dead_branches == 1:
+                for i in range(len(keys) - 1, 2, -1):
+                    pipeline[keys[i]] = pipeline[keys[i - 1]]
                 pipeline["X"] = ""
-            elif dead_branches > 1:
-                for i in range(2, 0, -1):
-                    if removed_c != dead_branches:
-                        pipeline[keys[i]] = ""
-                    else:
-                        break
-            dead_branches = 0
+            all_empty = all(value == "" for value in pipeline.values())
+            if all_empty:
+                break
+            if branch_taken == True:
+                branch_taken = False
+                removed_c = 0
+                if dead_branches == 1:
+                    pipeline["X"] = ""
+                elif dead_branches > 1:
+                    for i in range(2, 0, -1):
+                        if removed_c != dead_branches:
+                            pipeline[keys[i]] = ""
+                        else:
+                            break
+                dead_branches = 0
 
 def main():
     file_path = input()
@@ -535,5 +542,5 @@ def main():
     simulate(instructions)
     print("TOTAL MISSES",misses)
     print("TOTAL HITS",hits)
-    print("TOTAL MEMORY ACCESSES",memory_accesses+misses)
+    print("TOTAL MEMORY ACCESSES",memory_accesses)
 main()
