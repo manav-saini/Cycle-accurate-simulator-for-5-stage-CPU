@@ -2,20 +2,27 @@
 
 # Assembler
 
-To run the assembler, run the following command:
+To run the assembler, run the following command and enter the path of the test file:
 
 ```bash
-./run-assembler
+python3 Assembler/main.py
 ```
 
 type instruciton file name like `instructions.txt`
 
 # Simulator
 
-To run the simulator, run the following command:
+To run the simulator, run the following command and enter the path of the binary file created:
 
 ```bash
-./run-simulator
-```
+python3 Simulator Updated/main.py
+``` 
 
-type output file name like `output.bin`
+# Graph plotter
+To run graph plotter
+To change the test file path and the log path update the test_file_path and log_file_path variable respectively
+```bash
+python3 graph_plotter.py
+```
+# Bonus (SIMD)
+Run the SIMD/simd2.ipynb file
