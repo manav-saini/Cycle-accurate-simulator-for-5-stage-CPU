@@ -201,6 +201,7 @@ print("Total Cycles: ", total_cycles)
 # ############
 # # PLOTTING #
 # ############
+print(instruction_frequency)
 
 print("-"*20)
 print("Instruction Memory Access Plot")
